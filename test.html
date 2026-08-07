@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sagar Public School Attendance</title>
+    <title>Barsoi Public School Attendance</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #f0fdf4; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
         .card { background: white; width: 100%; max-width: 360px; padding: 15px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; border-top: 5px solid #2e7d32; }
@@ -32,8 +32,8 @@
     </div>
 
     <div id="main-ui">
-        <h2>SAGAR PUBLIC SCHOOL</h2>
-        <div class="sub-header">Students Attendance System</div>
+        <h2>BARSOI PUBLIC SCHOOL</h2>
+        <div class="sub-header">Attendance System</div>
         <div id="clock">00:00:00</div>
         <div id="date">Loading...</div>
         
@@ -113,7 +113,7 @@
                 }, 300);
             } else {
                 document.getElementById('loader').innerHTML = `<h2 style='color:red;'>ACCESS DENIED</h2>
-                    <p>Aap school se <b>${d.toFixed(2)} km</b> door hain.</p>
+                    <p>You are <b>${d.toFixed(2)} km</b> away from school.Attendance is not allowed if distance is more than <b> 500 meters.</b></p>
                     <button onclick="location.reload()" style="background:#222; padding:10px; color:#fff; border:none; border-radius:5px; cursor:pointer;">Retry</button>`;
             }
         }, (err) => {
