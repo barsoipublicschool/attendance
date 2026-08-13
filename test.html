@@ -3,6 +3,11 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Barsoi Public School Attendance</title>
+    
+    <!-- SweetAlert2 CSS & JS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #f0fdf4; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
         .card { background: white; width: 100%; max-width: 360px; padding: 15px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; border-top: 5px solid #2e7d32; }
@@ -177,8 +182,26 @@
     function send(t) {
         const cid = document.getElementById('classList').value;
         const name = document.getElementById('sList').value;
-        if(!cid || !name) return alert("Select Class and Student!");
-        if(t === 'check-in' && !b64) return alert("Take Photo First!");
+        
+        if(!cid || !name) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Please Select',
+                text: 'Select Class and Student!',
+                confirmButtonColor: '#2e7d32'
+            });
+            return;
+        }
+
+        if(t === 'check-in' && !b64) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Photo Required',
+                text: 'Take Photo First!',
+                confirmButtonColor: '#2e7d32'
+            });
+            return;
+        }
         
         document.getElementById('status').innerHTML = `<span class="success-msg">✅ Done. ${name}</span>`;
         
