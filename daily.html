@@ -2,41 +2,43 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attendance Report</title>
+    <title>Attendance Report - Barsoi Public School</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f8f9fa; padding: 10px; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f8f9fa; padding: 10px; margin: 0; }
         .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 1000px; margin: auto; }
-        h2 { color: #2e7d32; text-align: center; }
+        h2 { color: #2e7d32; text-align: center; margin-bottom: 5px; }
         
         /* Stats Dashboard */
         .dashboard { display: flex; gap: 15px; margin-bottom: 20px; justify-content: center; }
-        .stat-card { background: #2e7d32; color: white; padding: 15px; border-radius: 8px; text-align: center; width: 150px; }
+        .stat-card { background: #2e7d32; color: white; padding: 12px 20px; border-radius: 8px; text-align: center; font-weight: bold; }
         
         .filters { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; justify-content: center; }
-        select, input, button { padding: 10px; border-radius: 6px; border: 1px solid #ccc; }
-        button { background: #2e7d32; color: white; border: none; cursor: pointer; }
+        select, input, button { padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px; }
+        button { background: #2e7d32; color: white; border: none; cursor: pointer; font-weight: bold; }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
-        th { background: #eee; padding: 10px; text-align: left; }
-        td { padding: 8px; border-bottom: 1px solid #eee; }
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; text-align: left; }
+        th { background: #e8f5e9; color: #2e7d32; padding: 10px; border-bottom: 2px solid #a5d6a7; }
+        td { padding: 10px; border-bottom: 1px solid #eee; }
         .status-p { color: green; font-weight: bold; }
         .status-a { color: red; font-weight: bold; }
         
         /* Modal Photo View */
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; }
-        .modal img { max-width: 90%; max-height: 80%; border-radius: 8px; }
-        .close-modal { position: absolute; top: 20px; right: 30px; color: white; font-size: 30px; cursor: pointer; }
+        .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; flex-direction: column; }
+        .modal-content { max-width: 85%; max-height: 75vh; border-radius: 12px; border: 3px solid white; box-shadow: 0 5px 25px rgba(0,0,0,0.5); object-fit: contain; }
+        .close-modal { position: absolute; top: 20px; right: 25px; color: white; font-size: 35px; font-weight: bold; cursor: pointer; }
+        .view-btn { cursor: pointer; color: #1565c0; background: #e3f2fd; padding: 4px 8px; border-radius: 5px; font-size: 12px; font-weight: bold; display: inline-block; }
     </style>
 </head>
 <body>
 
 <div class="card">
     <h2>Barsoi Public School</h2>
-    <p style="text-align:center;">Daily Attendance Tracking</p>
+    <p style="text-align:center; font-weight:bold; color:#555; margin-top:0;">Daily Attendance Tracking</p>
     
     <div class="dashboard">
-        <div class="stat-card">Total: <span id="totalCount">0</span></div>
-        <div class="stat-card" style="background:#4caf50;">Present: <span id="presentCount">0</span></div>
+        <div class="stat-card" style="background:#1565c0;">Total: <span id="totalCount">0</span></div>
+        <div class="stat-card" style="background:#2e7d32;">Present: <span id="presentCount">0</span></div>
     </div>
 
     <div class="filters">
@@ -48,31 +50,50 @@
         <button onclick="generateReport()">Generate Report</button>
     </div>
 
-    <div style="overflow-x:auto;">
+    <div class="table-container">
         <table id="reportTable">
             <thead>
                 <tr>
-                    <th>Name</th><th>Status</th><th>Photo</th><th>In</th><th>Out</th><th>Duration</th>
+                    <th>Name</th><th>Status</th><th>Photo</th><th>In Time</th><th>Out Time</th><th>Duration</th>
                 </tr>
             </thead>
-            <tbody id="reportBody"></tbody>
+            <tbody id="reportBody">
+                <tr><td colspan="6" style="text-align:center; color:#777;">Date select karke 'Generate Report' dabayein.</td></tr>
+            </tbody>
         </table>
     </div>
 </div>
 
 <!-- Photo Modal -->
-<div id="photoModal" class="modal" onclick="this.style.display='none'">
-    <span class="close-modal">&times;</span>
-    <img id="modalImg" src="">
+<div id="photoModal" class="modal">
+    <span class="close-modal" onclick="closeModal()">&times;</span>
+    <img id="modalImg" class="modal-content" src="">
 </div>
 
 <script>
+    // AAPNA WEB APP SCRIPT URL YAHAN RAKHEIN
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyzrc76WSQb88-ZRsZ1aQq5NznavtMkBWAp-OTLNgrgUDzsHlrk6fdpefvlrzNoeAxB/exec"; 
 
-    function openPhoto(id) {
-        if(!id || id === 'undefined') return;
-        document.getElementById('modalImg').src = `https://drive.google.com/uc?export=view&id=${id}`;
+    // Set Today's Date by Default
+    document.getElementById('datePicker').valueAsDate = new Date();
+
+    function openPhoto(photoId) {
+        if(!photoId || photoId === '' || photoId === 'undefined') {
+            alert('Photo not available for this record.');
+            return;
+        }
+        
+        // Google Drive Direct Image Viewer URL (Best for Web & Mobile)
+        const directUrl = `https://lh3.googleusercontent.com/d/${photoId}`;
+        
+        const modalImg = document.getElementById('modalImg');
+        modalImg.src = directUrl;
         document.getElementById('photoModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('photoModal').style.display = 'none';
+        document.getElementById('modalImg').src = "";
     }
 
     async function generateReport() {
@@ -80,43 +101,64 @@
         let date = document.getElementById('datePicker').value;
         let tbody = document.getElementById('reportBody');
         
-        tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;'>Loading...</td></tr>";
+        if(!date) {
+            alert("Kripya Date select karein!");
+            return;
+        }
 
-        // 1. Saare teachers ke naam layen
-        let allStaff = await fetch(SCRIPT_URL + "?classId=" + cid).then(r => r.json());
-        // 2. Attendance logs layen
-        let logs = await fetch(`${SCRIPT_URL}?getAttendance=true&classId=${cid}&name=all&date=${date}`).then(r => r.json());
+        tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;'>Loading Data... ⏳</td></tr>";
 
-        tbody.innerHTML = "";
-        let present = 0;
-
-        allStaff.forEach(staffName => {
-            // Check karein kya ye teacher attendance log me hai?
-            let record = logs.find(l => l[0].toLowerCase() === staffName.toLowerCase());
+        try {
+            // 1. Fetch Staff Master List
+            let allStaff = await fetch(SCRIPT_URL + "?classId=" + cid).then(r => r.json());
             
-            let tr = document.createElement('tr');
-            if(record) {
-                present++;
-                tr.innerHTML = `
-                    <td>${record[0]}</td>
-                    <td class="status-p">Present</td>
-                    <td><span style="cursor:pointer; color:blue;" onclick="openPhoto('${record[6]}')">👁️ View</span></td>
-                    <td>${record[1].split(' ')[1]}</td>
-                    <td>${record[2]}</td>
-                    <td>${record[5]}</td>
-                `;
-            } else {
-                tr.innerHTML = `
-                    <td>${staffName}</td>
-                    <td class="status-a">Absent</td>
-                    <td>-</td><td>-</td><td>-</td><td>-</td>
-                `;
-            }
-            tbody.appendChild(tr);
-        });
+            // 2. Fetch Attendance Logs
+            let logs = await fetch(`${SCRIPT_URL}?getAttendance=true&classId=${cid}&name=all&date=${date}`).then(r => r.json());
 
-        document.getElementById('totalCount').innerText = allStaff.length;
-        document.getElementById('presentCount').innerText = present;
+            tbody.innerHTML = "";
+            let present = 0;
+
+            if(!allStaff || allStaff.length === 0) {
+                tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;'>No Staff Found in Sheet.</td></tr>";
+                return;
+            }
+
+            allStaff.forEach(staffName => {
+                // Name match logic
+                let record = logs.find(l => l[0].toString().trim().toLowerCase() === staffName.toString().trim().toLowerCase());
+                
+                let tr = document.createElement('tr');
+                if(record) {
+                    present++;
+                    let photoId = record[6] || ""; // Photo ID Extracted from GS Array
+                    
+                    tr.innerHTML = `
+                        <td><b>${record[0]}</b></td>
+                        <td class="status-p">Present</td>
+                        <td>
+                            ${photoId ? `<span class="view-btn" onclick="openPhoto('${photoId}')">👁️ View</span>` : '-'}
+                        </td>
+                        <td>${record[1] ? record[1].split(' ')[1] + ' ' + (record[1].split(' ')[2] || '') : '-'}</td>
+                        <td>${record[2] || '-'}</td>
+                        <td>${record[5] || '-'}</td>
+                    `;
+                } else {
+                    tr.innerHTML = `
+                        <td style="color:#555;">${staffName}</td>
+                        <td class="status-a">Absent</td>
+                        <td>-</td><td>-</td><td>-</td><td>-</td>
+                    `;
+                }
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('totalCount').innerText = allStaff.length;
+            document.getElementById('presentCount').innerText = present;
+
+        } catch(err) {
+            console.error(err);
+            tbody.innerHTML = "<tr><td colspan='6' style='text-align:center; color:red;'>Data load karne me problem aayi. Check SCRIPT_URL or Internet Connection.</td></tr>";
+        }
     }
 </script>
 </body>
