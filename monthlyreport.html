@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAGAR Parent Portal - Square Photo History</title>
+    <title>BPS Parent Portal - Square Photo History</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #e8f5e9; margin: 0; padding: 15px; }
         .main-card { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); max-width: 500px; margin: auto; }
@@ -46,22 +46,18 @@
 
 <div class="main-card">
     <div class="title">
-        <h2 style="margin:0">SAGAR PUBLIC SCHOOL </h2>
+        <h2 style="margin:0">BARSOI PUBLIC SCHOOL </h2>
         <small>Attendance Tracking Portal</small>
     </div>
 
     <select id="classId" onchange="fetchStudents()">
-        <option value="">-- Select Class --</option>
-        <option value="1">Class 1</option><option value="2">Class 2</option>
-        <option value="3">Class 3</option><option value="4">Class 4</option>
-        <option value="5">Class 5</option><option value="6">Class 6</option>
-        <option value="7">Class 7</option><option value="8">Class 8</option>
-        <option value="9">Class 9</option><option value="10">Class 10</option>
-        <option value="11">Teachers</option>
+        <option value="">-- Select --</option>
+        <option value="1">Teachers</option><option value="2">Non Teaching</option>
+        
     </select>
 
     <select id="studentId" disabled>
-        <option value="">-- Select Student --</option>
+        <option value="">-- Select Teacher --</option>
     </select>
 
     <button class="btn-check" onclick="loadHistory()">Check Attendance</button>
@@ -71,7 +67,7 @@
 </div>
 
 <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzpEpOnpXrFkouGcnmIHa032feqrtZUN891mAnrFBWtIN4YmZG2_U575DTTwW-2Bp81/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx9Sv7ZKu5eOBww9ZFZl3KV0gY_OF8AVPWvXBXJJEPsS05xqB3M0cIEvuw0AIYv0ieO/exec";
 
     async function fetchStudents() {
         const cid = document.getElementById('classId').value;
