@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Report - Barsoi Public School</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f8f9fa; padding: 10px; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 900px; margin: auto; }
+        h2 { color: #2e7d32; text-align: center; }
+        .filters { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; justify-content: center; }
+        select, input, button { padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px; }
+        button { background: #2e7d32; color: white; border: none; cursor: pointer; font-weight: bold; }
+        
+        .table-container { overflow-x: auto; margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th { background: #2e7d32; color: white; padding: 10px; text-align: left; }
+        td { padding: 8px; border-bottom: 1px solid #eee; }
+        .status-p { color: green; font-weight: bold; }
+        .photo-link { color: blue; text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Barsoi Public School</h2>
+    <p style="text-align:center; font-weight:bold;">Daily Attendance Tracking</p>
+    
+    <div class="filters">
+        <select id="classList" onchange="loadStudents()">
+            <option value="">-- Class --</option>
+            <option value="1">Teachers</option>
+            <option value="2">Non-Teaching</option>
+        </select>
+        <select id="sList">
+            <option value="all">All Staff</option>
+        </select>
+        <input type="date" id="datePicker">
+        <button onclick="fetchReport()">Get Report</button>
+    </div>
+
+    <div class="table-container">
+        <table id="reportTable">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Photo</th>
+                    <th>In Time</th>
+                    <th>Out Time</th>
+                    <th>In Loc (Lat,Lon)</th>
+                    <th>Out Loc (Lat,Lon)</th>
+                    <th>Duration</th>
+                </tr>
+            </thead>
+            <tbody id="reportBody">
+                <!-- Data will load here -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // Yahan apna SCRIPT_URL dalen
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyzrc76WSQb88-ZRsZ1aQq5NznavtMkBWAp-OTLNgrgUDzsHlrk6fdpefvlrzNoeAxB/exec"; 
+
+    function loadStudents() {
+        let cid = document.getElementById('classList').value;
+        let sl = document.getElementById('sList');
+        if(!cid) return;
+        fetch(SCRIPT_URL + "?classId=" + cid).then(r => r.json()).then(data => {
+            sl.innerHTML = "<option value='all'>All Staff</option>";
+            data.forEach(n => sl.innerHTML += `<option value="${n}">${n}</option>`);
+        });
+    }
+
+    function fetchReport() {
+        let cid = document.getElementById('classList').value;
+        let name = document.getElementById('sList').value;
+        let date = document.getElementById('datePicker').value;
+        let tbody = document.getElementById('reportBody');
+        
+        if(!cid) { alert("Please select class!"); return; }
+
+        tbody.innerHTML = "<tr><td colspan='9' style='text-align:center;'>Loading...</td></tr>";
+
+        fetch(`${SCRIPT_URL}?getAttendance=true&classId=${cid}&name=${name}&date=${date}`)
+        .then(r => r.json())
+        .then(data => {
+            tbody.innerHTML = "";
+            if(data.length === 0) {
+                tbody.innerHTML = "<tr><td colspan='9' style='text-align:center;'>No records found.</td></tr>";
+                return;
+            }
+            
+            data.forEach(row => {
+                // row: [Name, In, Out, LocIn, LocOut, Status, PhotoId]
+                let tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${row[0]}</td>
+                    <td>${row[1].split(' ')[0]}</td>
+                    <td class="status-p">Present</td>
+                    <td><a href="https://drive.google.com/uc?export=view&id=${row[6]}" target="_blank" class="photo-link">View</a></td>
+                    <td>${row[1].split(' ')[1] + ' ' + row[1].split(' ')[2]}</td>
+                    <td>${row[2]}</td>
+                    <td>${row[3]}</td>
+                    <td>${row[4]}</td>
+                    <td>${row[5]}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        });
+    }
+</script>
+</body>
+</html>
