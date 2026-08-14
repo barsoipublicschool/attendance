@@ -17,9 +17,9 @@
         button { background: #2e7d32; color: white; border: none; cursor: pointer; font-weight: bold; }
 
         .table-container { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; text-align: left; }
-        th { background: #e8f5e9; color: #2e7d32; padding: 10px; border-bottom: 2px solid #a5d6a7; }
-        td { padding: 10px; border-bottom: 1px solid #eee; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; text-align: left; }
+        th { background: #e8f5e9; color: #2e7d32; padding: 10px; border-bottom: 2px solid #a5d6a7; white-space: nowrap; }
+        td { padding: 10px; border-bottom: 1px solid #eee; white-space: nowrap; }
         .status-p { color: green; font-weight: bold; }
         .status-a { color: red; font-weight: bold; }
         
@@ -27,7 +27,7 @@
         .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; flex-direction: column; }
         .modal-content { max-width: 85%; max-height: 75vh; border-radius: 12px; border: 3px solid white; box-shadow: 0 5px 25px rgba(0,0,0,0.5); object-fit: contain; }
         .close-modal { position: absolute; top: 20px; right: 25px; color: white; font-size: 35px; font-weight: bold; cursor: pointer; }
-        .view-btn { cursor: pointer; color: #1565c0; background: #e3f2fd; padding: 4px 8px; border-radius: 5px; font-size: 12px; font-weight: bold; display: inline-block; }
+        .view-btn { cursor: pointer; color: #1565c0; background: #e3f2fd; padding: 4px 8px; border-radius: 5px; font-size: 11px; font-weight: bold; display: inline-block; }
     </style>
 </head>
 <body>
@@ -54,11 +54,11 @@
         <table id="reportTable">
             <thead>
                 <tr>
-                    <th>Name</th><th>Status</th><th>Photo</th><th>In Time</th><th>Out Time</th><th>Duration</th>
+                    <th>Name</th><th>Status</th><th>Photo</th><th>In Time</th><th>Out Time</th><th>In Loc</th><th>Out Loc</th><th>Duration</th>
                 </tr>
             </thead>
             <tbody id="reportBody">
-                <tr><td colspan="6" style="text-align:center; color:#777;">Date select karke 'Generate Report' dabayein.</td></tr>
+                <tr><td colspan="8" style="text-align:center; color:#777;">Date select karke 'Generate Report' dabayein.</td></tr>
             </tbody>
         </table>
     </div>
@@ -71,23 +71,14 @@
 </div>
 
 <script>
-    // AAPNA WEB APP SCRIPT URL YAHAN RAKHEIN
+    // URL wahi hai jo aapne pichli baar use kiya tha
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyzrc76WSQb88-ZRsZ1aQq5NznavtMkBWAp-OTLNgrgUDzsHlrk6fdpefvlrzNoeAxB/exec"; 
 
-    // Set Today's Date by Default
     document.getElementById('datePicker').valueAsDate = new Date();
 
     function openPhoto(photoId) {
-        if(!photoId || photoId === '' || photoId === 'undefined') {
-            alert('Photo not available for this record.');
-            return;
-        }
-        
-        // Google Drive Direct Image Viewer URL (Best for Web & Mobile)
-        const directUrl = `https://lh3.googleusercontent.com/d/${photoId}`;
-        
-        const modalImg = document.getElementById('modalImg');
-        modalImg.src = directUrl;
+        if(!photoId || photoId === '' || photoId === 'undefined') return;
+        document.getElementById('modalImg').src = `https://lh3.googleusercontent.com/d/${photoId}`;
         document.getElementById('photoModal').style.display = 'flex';
     }
 
@@ -101,52 +92,40 @@
         let date = document.getElementById('datePicker').value;
         let tbody = document.getElementById('reportBody');
         
-        if(!date) {
-            alert("Kripya Date select karein!");
-            return;
-        }
+        if(!date) { alert("Kripya Date select karein!"); return; }
 
-        tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;'>Loading Data... ⏳</td></tr>";
+        tbody.innerHTML = "<tr><td colspan='8' style='text-align:center;'>Loading Data... ⏳</td></tr>";
 
         try {
-            // 1. Fetch Staff Master List
             let allStaff = await fetch(SCRIPT_URL + "?classId=" + cid).then(r => r.json());
-            
-            // 2. Fetch Attendance Logs
             let logs = await fetch(`${SCRIPT_URL}?getAttendance=true&classId=${cid}&name=all&date=${date}`).then(r => r.json());
 
             tbody.innerHTML = "";
             let present = 0;
 
-            if(!allStaff || allStaff.length === 0) {
-                tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;'>No Staff Found in Sheet.</td></tr>";
-                return;
-            }
-
             allStaff.forEach(staffName => {
-                // Name match logic
                 let record = logs.find(l => l[0].toString().trim().toLowerCase() === staffName.toString().trim().toLowerCase());
                 
                 let tr = document.createElement('tr');
                 if(record) {
                     present++;
-                    let photoId = record[6] || ""; // Photo ID Extracted from GS Array
+                    let photoId = record[6] || ""; 
                     
                     tr.innerHTML = `
                         <td><b>${record[0]}</b></td>
                         <td class="status-p">Present</td>
-                        <td>
-                            ${photoId ? `<span class="view-btn" onclick="openPhoto('${photoId}')">👁️ View</span>` : '-'}
-                        </td>
-                        <td>${record[1] ? record[1].split(' ')[1] + ' ' + (record[1].split(' ')[2] || '') : '-'}</td>
+                        <td>${photoId ? `<span class="view-btn" onclick="openPhoto('${photoId}')">👁️ View</span>` : '-'}</td>
+                        <td>${record[1] ? record[1].split(' ')[1] : '-'}</td>
                         <td>${record[2] || '-'}</td>
+                        <td>${record[3] || '-'}</td>
+                        <td>${record[4] || '-'}</td>
                         <td>${record[5] || '-'}</td>
                     `;
                 } else {
                     tr.innerHTML = `
                         <td style="color:#555;">${staffName}</td>
                         <td class="status-a">Absent</td>
-                        <td>-</td><td>-</td><td>-</td><td>-</td>
+                        <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
                     `;
                 }
                 tbody.appendChild(tr);
@@ -156,8 +135,7 @@
             document.getElementById('presentCount').innerText = present;
 
         } catch(err) {
-            console.error(err);
-            tbody.innerHTML = "<tr><td colspan='6' style='text-align:center; color:red;'>Data load karne me problem aayi. Check SCRIPT_URL or Internet Connection.</td></tr>";
+            tbody.innerHTML = "<tr><td colspan='8' style='text-align:center; color:red;'>Data load failed.</td></tr>";
         }
     }
 </script>
