@@ -45,7 +45,6 @@
         <select id="classList" onchange="saveClassAndLoad()">
             <option value="">-- SELECT --</option>
             <option value="1">Teachers</option><option value="2">Non-Teaching Staffs</option>
-        
         </select>
 
         <select id="sList"><option value="">-- SELECT --</option></select>
@@ -75,7 +74,7 @@
 <canvas id="c" style="display:none;"></canvas>
 
 <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyDY23PaC6AKBZn87Q5hT9lmPQOQwrahPsZdSs31XVygmAG8_rhRABh7Q8K03a3lmC-/exec"; 
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyzrc76WSQb88-ZRsZ1aQq5NznavtMkBWAp-OTLNgrgUDzsHlrk6fdpefvlrzNoeAxB/exec"; 
     
     // --- SCHOOL COORDINATES ---
     const SCHOOL_LAT = 25.624388; 
@@ -105,7 +104,6 @@
                 document.getElementById('loader').style.display = 'none';
                 document.getElementById('main-ui').style.display = 'block';
                 
-                // UI display hone ke baad hi camera ko call karein
                 setTimeout(() => {
                     startCam();
                     startClock();
@@ -133,7 +131,7 @@
     }
 
     async function startCam() {
-        const video = document.getElementById('v'); // Yahan capture karein
+        const video = document.getElementById('v');
         if (streamRef) { streamRef.getTracks().forEach(t => t.stop()); }
         try {
             streamRef = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: 480 } });
@@ -180,32 +178,38 @@
         const name = document.getElementById('sList').value;
         
         if(!cid || !name) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Please Select',
-                text: 'Select Class and Student!',
-                confirmButtonColor: '#2e7d32'
-            });
+            Swal.fire({ icon: 'warning', title: 'Please Select', text: 'Select Class and Student!', confirmButtonColor: '#2e7d32' });
             return;
         }
 
         if(t === 'check-in' && !b64) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Photo Required',
-                text: 'Take Photo First!',
-                confirmButtonColor: '#2e7d32'
-            });
+            Swal.fire({ icon: 'warning', title: 'Photo Required', text: 'Take Photo First!', confirmButtonColor: '#2e7d32' });
             return;
         }
         
-        document.getElementById('status').innerHTML = `<span class="success-msg">✅ Done. ${name}</span>`;
+        // Loader dikhayen
+        Swal.fire({ title: 'Submitting...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
         
         navigator.geolocation.getCurrentPosition(pos => {
             const payload = { classId: cid, name: name, type: t, location: pos.coords.latitude + "," + pos.coords.longitude, photo: b64 };
-            fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-            setTimeout(() => { resetUI(true); }, 3000);
-        });
+            
+            // fetch request (without no-cors)
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                Swal.fire({ icon: 'success', title: 'Done', text: `Attendance for ${name} recorded!`, timer: 2000 });
+                resetUI(true);
+            })
+            .catch(err => {
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Something went wrong!' });
+            });
+            
+        }, (err) => {
+            Swal.fire({ icon: 'error', title: 'GPS Error', text: 'Location access denied!' });
+        }, { enableHighAccuracy: true });
     }
 
     function resetUI(clearMsg) {
