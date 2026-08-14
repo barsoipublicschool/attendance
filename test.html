@@ -158,7 +158,7 @@
         if(!cid) return;
         sl.innerHTML = "<option>Loading...</option>";
         fetch(SCRIPT_URL + "?classId=" + cid).then(r => r.json()).then(data => {
-            sl.innerHTML = "<option value=''>-- SELECT STUDENT --</option>";
+            sl.innerHTML = "<option value=''>-- SELECT --</option>";
             data.forEach(n => sl.innerHTML += `<option value="${n}">${n}</option>`);
         });
     }
