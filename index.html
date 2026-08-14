@@ -2,68 +2,73 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BARSOI PUBLIC SCHOOL Attendance</title>
+    <title>Barsoi Public School Attendance</title>
+    
+    <!-- SweetAlert2 CSS & JS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #f0fdf4; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
         .card { background: white; width: 100%; max-width: 360px; padding: 15px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; border-top: 5px solid #2e7d32; }
+        #main-ui { display: none; }
+        #loader { padding: 40px 10px; }
         h2 { color: #2e7d32; margin: 5px 0; font-size: 20px; text-transform: uppercase; }
         .sub-header { color: #444; font-size: 14px; font-weight: bold; margin-bottom: 5px; }
         #clock { font-size: 50px; font-weight: bold; color: #ff5722; margin: 0; font-family: sans-serif; letter-spacing: 2px; }
         #date { font-size: 18px; color: #777; margin-bottom: 15px; font-weight: 400; }
-        
         select { width: 100%; padding: 12px; border-radius: 8px; margin-bottom: 10px; font-size: 16px; font-weight: bold; border: 2px solid #2e7d32; background: #fff; }
         .cam-box { width: 100%; border-radius: 10px; overflow: hidden; border: 2px solid #ccc; aspect-ratio: 4/3; margin-bottom: 10px; background: #000; position: relative; }
         video, img { width: 100%; height: 100%; object-fit: cover; }
-        
         button { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; color: white; margin-bottom: 8px; cursor: pointer; }
         .b-snap { background: #673ab7; } .b-in { background: #4CAF50; } .b-out { background: #f44336; }
         .b-reset { background: #555; font-size: 12px; padding: 8px; margin-bottom: 10px; width: auto; min-width: 150px; }
-        
         #status { font-weight: bold; margin: 10px 0; min-height: 25px; transition: 0.3s; }
         .success-msg { color: #2e7d32; font-size: 18px; display: block; padding: 10px; border-radius: 8px; background: #e8f5e9; border: 2px solid #4caf50; }
-        
         .footer { font-size: 11px; color: #777; margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>SAGAR PUBLIC SCHOOL</h2>
-    <div class="sub-header">Students Attendance System</div>
-    
-    <div id="clock">00:00:00</div>
-    <div id="date">Loading...</div>
-    
-    <select id="classList" onchange="saveClassAndLoad()">
-        <option value="">-- SELECT CLASS --</option>
-        <option value="1">Class 1</option><option value="2">Class 2</option>
-        <option value="3">Class 3</option><option value="4">Class 4</option>
-        <option value="5">Class 5</option><option value="6">Class 6</option>
-        <option value="7">Class 7</option><option value="8">Class 8</option>
-        <option value="9">Class 9</option><option value="10">Class 10</option>
-        <option value="11">Teachers</option>
-    </select>
-
-    <select id="sList"><option value="">-- SELECT  --</option></select>
-
-    <button class="b-reset" onclick="startCam()">🔄 Reset Camera if Black</button>
-
-    <div class="cam-box">
-        <video id="v" autoplay playsinline muted></video>
-        <img id="p" style="display:none;">
-    </div>
-    
-    <div id="ctrls">
-        <button class="b-snap" id="snBtn" onclick="snap()">📸 TAKE PHOTO</button>
-        <button class="b-in" onclick="send('check-in')">SCHOOL-IN</button>
-        <button class="b-out" onclick="send('check-out')">SCHOOL-OUT</button>
+    <div id="loader">
+        <h3>Verifying Location... 📍</h3>
+        <p>Please wait, checking school range.</p>
     </div>
 
-    <div id="status">Ready</div>
+    <div id="main-ui">
+        <h2>BARSOI PUBLIC SCHOOL</h2>
+        <div class="sub-header">Attendance System</div>
+        <div id="clock">00:00:00</div>
+        <div id="date">Loading...</div>
+        
+        <select id="classList" onchange="saveClassAndLoad()">
+            <option value="">-- SELECT --</option>
+            <option value="1">Teachers</option><option value="2">Non-Teaching Staffs</option>
+        
+        </select>
 
-    <div class="footer">
-        Location and camera permissions required.<br>
-        <b>Created by Riyaz Ahmad, PGT Zoology</b>
+        <select id="sList"><option value="">-- SELECT --</option></select>
+
+        <button class="b-reset" onclick="startCam()">🔄 Reset Camera</button>
+
+        <div class="cam-box">
+            <video id="v" autoplay playsinline muted></video>
+            <img id="p" style="display:none;">
+        </div>
+        
+        <div id="ctrls">
+            <button class="b-snap" id="snBtn" onclick="snap()">📸 TAKE PHOTO</button>
+            <button class="b-in" onclick="send('check-in')">SCHOOL-IN</button>
+            <button class="b-out" onclick="send('check-out')">SCHOOL-OUT</button>
+        </div>
+
+        <div id="status">Ready</div>
+
+        <div class="footer">
+            Location and camera permissions required.<br>
+            <b>Created by Riyaz Ahmad, PGT Zoology</b>
+        </div>
     </div>
 </div>
 
@@ -71,38 +76,75 @@
 
 <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx9Sv7ZKu5eOBww9ZFZl3KV0gY_OF8AVPWvXBXJJEPsS05xqB3M0cIEvuw0AIYv0ieO/exec"; 
+    
+    // --- SCHOOL COORDINATES ---
+    const SCHOOL_LAT = 25.624388; 
+    const SCHOOL_LON = 87.929700; 
+    const MAX_DIST = 0.5; 
 
-    // Updated Logic for Day, Month Date, Year
-    setInterval(() => { 
-        const now = new Date();
-        // Time format
-        document.getElementById('clock').innerText = now.toLocaleTimeString('en-GB'); 
-        
-        // Date format: Friday, March 6, 2026
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        document.getElementById('date').innerText = now.toLocaleDateString('en-US', options);
-    }, 1000);
+    let b64 = "", streamRef = null;
 
-    let v = document.getElementById('v'), b64 = "", streamRef = null;
-
-    async function startCam() {
-        if (streamRef) { streamRef.getTracks().forEach(t => t.stop()); }
-        try {
-            streamRef = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: 480 } });
-            v.srcObject = streamRef;
-            v.play();
-            document.getElementById('status').innerText = "Camera Ready ✅";
-        } catch (e) { document.getElementById('status').innerText = "Camera Error!"; }
+    function getDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371; 
+        const dLat = (lat2-lat1) * Math.PI/180;
+        const dLon = (lon2-lon1) * Math.PI/180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+        return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
     }
 
     window.onload = () => {
-        startCam();
-        const saved = localStorage.getItem('lastClass');
-        if(saved) { 
-            document.getElementById('classList').value = saved; 
-            loadStudents(); 
+        if (!navigator.geolocation) {
+            document.getElementById('loader').innerHTML = "<h2>Error</h2><p>GPS not supported.</p>";
+            return;
         }
+
+        navigator.geolocation.getCurrentPosition(pos => {
+            const d = getDistance(pos.coords.latitude, pos.coords.longitude, SCHOOL_LAT, SCHOOL_LON);
+            
+            if (d <= MAX_DIST) {
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('main-ui').style.display = 'block';
+                
+                // UI display hone ke baad hi camera ko call karein
+                setTimeout(() => {
+                    startCam();
+                    startClock();
+                    const saved = localStorage.getItem('lastClass');
+                    if(saved) { document.getElementById('classList').value = saved; loadStudents(); }
+                }, 300);
+            } else {
+                document.getElementById('loader').innerHTML = `<h2 style='color:red;'>ACCESS DENIED</h2>
+                    <p>You are <b>${d.toFixed(2)} km</b> away from school.Attendance is not allowed if distance is more than <b> 500 meters.</b></p>
+                    <button onclick="location.reload()" style="background:#222; padding:10px; color:#fff; border:none; border-radius:5px; cursor:pointer;">Retry</button>`;
+            }
+        }, (err) => {
+            document.getElementById('loader').innerHTML = "<h2>Permission Denied</h2><p>GPS/Location on karein aur permission allow karein.</p><button onclick='location.reload()'>Try Again</button>";
+        }, { enableHighAccuracy: true });
     };
+
+    function startClock() {
+        setInterval(() => {
+            const now = new Date();
+            const clk = document.getElementById('clock');
+            const dt = document.getElementById('date');
+            if(clk) clk.innerText = now.toLocaleTimeString('en-GB');
+            if(dt) dt.innerText = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        }, 1000);
+    }
+
+    async function startCam() {
+        const video = document.getElementById('v'); // Yahan capture karein
+        if (streamRef) { streamRef.getTracks().forEach(t => t.stop()); }
+        try {
+            streamRef = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: 480 } });
+            video.srcObject = streamRef;
+            video.play();
+            document.getElementById('status').innerText = "Camera Ready ✅";
+        } catch (e) { 
+            console.log(e);
+            document.getElementById('status').innerText = "Camera Error! Close other apps and refresh."; 
+        }
+    }
 
     function saveClassAndLoad() {
         let cid = document.getElementById('classList').value;
@@ -115,22 +157,21 @@
         let sl = document.getElementById('sList');
         if(!cid) return;
         sl.innerHTML = "<option>Loading...</option>";
-        fetch(SCRIPT_URL + "?classId=" + cid)
-            .then(r => r.json())
-            .then(data => {
-                sl.innerHTML = "<option value=''>-- SELECT STUDENT --</option>";
-                data.forEach(n => sl.innerHTML += `<option value="${n}">${n}</option>`);
-            });
+        fetch(SCRIPT_URL + "?classId=" + cid).then(r => r.json()).then(data => {
+            sl.innerHTML = "<option value=''>-- SELECT --</option>";
+            data.forEach(n => sl.innerHTML += `<option value="${n}">${n}</option>`);
+        });
     }
 
     function snap() {
+        const video = document.getElementById('v');
         const cn = document.getElementById('c');
         cn.width = 400; cn.height = 300;
-        cn.getContext('2d').drawImage(v, 0, 0, 400, 300);
+        cn.getContext('2d').drawImage(video, 0, 0, 400, 300);
         b64 = cn.toDataURL('image/jpeg', 0.5); 
         document.getElementById('p').src = b64; 
         document.getElementById('p').style.display = "block"; 
-        v.style.display = "none";
+        video.style.display = "none";
         document.getElementById('snBtn').innerText = "🔄 RETAKE PHOTO";
     }
 
@@ -138,31 +179,31 @@
         const cid = document.getElementById('classList').value;
         const name = document.getElementById('sList').value;
         
-        if(!cid || !name) return alert("Select Class and Student!");
-        if(t === 'check-in' && !b64) return alert("Take Photo First!");
+        if(!cid || !name) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Please Select',
+                text: 'Select Class and Student!',
+                confirmButtonColor: '#2e7d32'
+            });
+            return;
+        }
 
-        const statusDiv = document.getElementById('status');
-        statusDiv.innerHTML = `<span class="success-msg">✅ Done. ${name}</span>`;
+        if(t === 'check-in' && !b64) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Photo Required',
+                text: 'Take Photo First!',
+                confirmButtonColor: '#2e7d32'
+            });
+            return;
+        }
+        
+        document.getElementById('status').innerHTML = `<span class="success-msg">✅ Done. ${name}</span>`;
         
         navigator.geolocation.getCurrentPosition(pos => {
-            const payload = {
-                classId: cid, 
-                name: name, 
-                type: t, 
-                location: pos.coords.latitude + "," + pos.coords.longitude, 
-                photo: b64
-            };
-
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors', 
-                body: JSON.stringify(payload)
-            });
-
-            setTimeout(() => { resetUI(true); }, 3000);
-
-        }, (err) => { 
-            console.log("GPS Error");
+            const payload = { classId: cid, name: name, type: t, location: pos.coords.latitude + "," + pos.coords.longitude, photo: b64 };
+            fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
             setTimeout(() => { resetUI(true); }, 3000);
         });
     }
@@ -170,12 +211,10 @@
     function resetUI(clearMsg) {
         b64 = ""; 
         document.getElementById('p').style.display = "none"; 
-        v.style.display = "block";
+        document.getElementById('v').style.display = "block";
         document.getElementById('snBtn').innerText = "📸 TAKE PHOTO";
         document.getElementById('sList').value = "";
-        if(clearMsg) {
-            document.getElementById('status').innerText = "Ready";
-        }
+        if(clearMsg) document.getElementById('status').innerText = "Ready";
     }
 </script>
 </body>
