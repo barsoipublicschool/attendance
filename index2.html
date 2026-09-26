@@ -81,8 +81,8 @@
 
         <div class="user-name" id="display-name">SELECT TEACHER</div>
         <div class="info-text">Teacher ID :<span id="display-id">--</span></div>
-        <div class="info-text">UDISE :<span id="display-udise">10101109902</span></div>
-        <div class="school-title">BARSOI PUBLIC SCHOOL</div>
+        <div class="info-text">UDISE :<span id="display-udise">10101101402</span></div>
+        <div class="school-title">UCCH MADHYAMIK VIDYALAYA KANDELA PATOL</div>
 
         <div class="distance-alert" id="distance-info">Calculating distance...</div>
 
@@ -118,7 +118,7 @@
             
             <div class="cam-overlay-text">
                 <div class="bold-name" id="cam-user-name">--</div>
-                <div>UDISE : <span id="cam-udise">10101109902</span></div>
+                <div>UDISE : <span id="cam-udise">10101101402</span></div>
                 <div>Latitude : <span id="cam-lat">0.0000000</span></div>
                 <div>Longitude : <span id="cam-lon">0.0000000</span></div>
                 <div>Time : <span id="cam-time">--:-- AM</span></div>
@@ -136,7 +136,7 @@
 <canvas id="c" style="display:none;"></canvas>
 
 <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx17tu8tuwP2FuhxNKpxYjib20ODR6N5r5HCNSE_8WTD0pbX3bUbw5ccoVV_0jz8XEx5w/exec"; 
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwO0mPI_E3jfYqswKDStIt4HopC663X5z3DPofREQBlt08kwpr1loQpag8oUuNjBlOZNw/exec"; 
     
     const SCHOOL_LAT = 25.624363; 
     const SCHOOL_LON = 87.929680; 
@@ -169,7 +169,8 @@
             return;
         }
 
-        navigator.geolocation.getCurrentPosition(pos => {
+        // Continuous Location Tracking for fast access without delay
+        navigator.geolocation.watchPosition(pos => {
             userLat = pos.coords.latitude;
             userLon = pos.coords.longitude;
             const d = getDistance(userLat, userLon, SCHOOL_LAT, SCHOOL_LON);
@@ -178,19 +179,18 @@
             document.getElementById('distance-info').innerText = `You are ${distInMeters} m away from the school boundary`;
 
             if (d <= MAX_DIST) {
-                document.getElementById('loader').style.display = 'none';
-                document.getElementById('main-ui').style.display = 'block';
-                
-                const saved = localStorage.getItem('lastClass');
-                if(saved) { document.getElementById('classList').value = saved; loadStudents(); }
+                if(document.getElementById('loader').style.display !== 'none') {
+                    document.getElementById('loader').style.display = 'none';
+                    document.getElementById('main-ui').style.display = 'block';
+                    const saved = localStorage.getItem('lastClass');
+                    if(saved) { document.getElementById('classList').value = saved; loadStudents(); }
+                }
             } else {
                 document.getElementById('loader').innerHTML = `<h2 style='color:red;'>ACCESS DENIED</h2>
                     <p>You are <b>${d.toFixed(2)} km</b> away from school. Allowed radius: <b>500m</b>.</p>
                     <button onclick="location.reload()" style="background:#222; padding:10px; color:#fff; border:none; border-radius:5px;">Retry</button>`;
             }
-        }, () => {
-            document.getElementById('loader').innerHTML = "<h2>Permission Denied</h2><p>Turn on GPS/Location permission.</p><button onclick='location.reload()'>Try Again</button>";
-        }, { enableHighAccuracy: true });
+        }, () => {}, { enableHighAccuracy: true });
     };
 
     function startClock() {
@@ -209,7 +209,6 @@
         loadStudents();
     }
 
-    // Flexible Data Loading (Fixes 'Loading...' Issue)
     function loadStudents() {
         let cid = document.getElementById('classList').value;
         let sl = document.getElementById('sList');
@@ -336,24 +335,22 @@
         stopCam();
     }
 
-    // Dynamic High-Compression Image Generator (Micro-Size Photo)
     function snap() {
         const video = document.getElementById('v');
         compressAndSetPhoto(video);
         stopCam();
     }
 
+    // Ultra-Fast Image Resizing (240x240 px, 30% Quality JPEG -> ~5KB)
     function compressAndSetPhoto(sourceElement) {
         const cn = document.getElementById('c');
         const ctx = cn.getContext('2d');
         
-        // Low Resolution for fast speed (320x320 px)
-        cn.width = 320; 
-        cn.height = 320;
-        ctx.drawImage(sourceElement, 0, 0, 320, 320);
+        cn.width = 240; 
+        cn.height = 240;
+        ctx.drawImage(sourceElement, 0, 0, 240, 240);
         
-        // High Compression (40% Quality Jpeg)
-        b64 = cn.toDataURL('image/jpeg', 0.4); 
+        b64 = cn.toDataURL('image/jpeg', 0.3); 
         
         document.getElementById('p').src = b64; 
         document.getElementById('p').style.display = "block"; 
@@ -362,6 +359,7 @@
         document.getElementById('subBtn').classList.add('active');
     }
 
+    // Direct Instant Instant Submission (No GPS Wait)
     function submitAttendance() {
         if(!b64) {
             Swal.fire({ icon: 'warning', title: 'Photo Required', text: 'Take Photo First!' });
@@ -378,35 +376,38 @@
 
         Swal.fire({ title: 'Submitting...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
 
-        navigator.geolocation.getCurrentPosition(pos => {
-            const payload = { classId: cid, name: name, teacherId: teacherId, type: t, location: pos.coords.latitude + "," + pos.coords.longitude, photo: b64 };
+        const payload = { 
+            classId: cid, 
+            name: name, 
+            teacherId: teacherId, 
+            type: t, 
+            location: userLat + "," + userLon, 
+            photo: b64 
+        };
 
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                body: JSON.stringify(payload)
-            })
-            .then(res => res.json())
-            .then(data => {
-                const nowTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-                const todayKey = new Date().toISOString().split('T')[0];
-                const attKey = `att_${todayKey}_${name}`;
-                let userRecord = JSON.parse(localStorage.getItem(attKey) || '{}');
+        fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(data => {
+            const nowTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+            const todayKey = new Date().toISOString().split('T')[0];
+            const attKey = `att_${todayKey}_${name}`;
+            let userRecord = JSON.parse(localStorage.getItem(attKey) || '{}');
 
-                if(t === 'check-in') userRecord.inTime = nowTime;
-                else userRecord.outTime = nowTime;
+            if(t === 'check-in') userRecord.inTime = nowTime;
+            else userRecord.outTime = nowTime;
 
-                localStorage.setItem(attKey, JSON.stringify(userRecord));
-                updateUserInfo();
+            localStorage.setItem(attKey, JSON.stringify(userRecord));
+            updateUserInfo();
 
-                Swal.fire({ icon: 'success', title: 'Done', text: `Attendance recorded!`, timer: 1500 });
-                resetCamUI();
-            })
-            .catch(err => {
-                Swal.fire({ icon: 'error', title: 'Error', text: 'Something went wrong!' });
-            });
-        }, () => {
-            Swal.fire({ icon: 'error', title: 'GPS Error', text: 'Location access denied!' });
-        }, { enableHighAccuracy: true });
+            Swal.fire({ icon: 'success', title: 'Done', text: `Attendance recorded!`, timer: 1200 });
+            resetCamUI();
+        })
+        .catch(err => {
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Something went wrong!' });
+        });
     }
 
     function resetCamUI() {
