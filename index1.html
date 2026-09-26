@@ -208,6 +208,18 @@
             padding: 15px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             text-align: center;
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #8e8e93;
+            cursor: pointer;
+            z-index: 10;
         }
 
         .cam-box {
@@ -235,6 +247,7 @@
             text-shadow: 0 1px 3px rgba(0,0,0,0.8);
             line-height: 1.4;
             font-weight: 500;
+            pointer-events: none;
         }
 
         .cam-overlay-text .bold-name {
@@ -301,7 +314,6 @@
             <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
         </div>
 
-        <!-- Dynamic User/Staff Selection -->
         <select id="classList" class="select-box" onchange="saveClassAndLoad()">
             <option value="">-- SELECT CATEGORY --</option>
             <option value="1">Teachers</option>
@@ -338,8 +350,6 @@
             <button class="btn-action btn-out" onclick="openCameraModal('check-out')">Mark Out/<br>कार्यविधि समाप्ति दर्ज करें</button>
         </div>
 
-        <div id="status" style="display:none;">Ready</div>
-
         <div class="footer">
             <b>Created by Riyaz Ahmad, PGT Zoology</b>
         </div>
@@ -349,6 +359,7 @@
 <!-- Camera Modal View Popup -->
 <div class="camera-modal" id="camModal">
     <div class="modal-content">
+        <span class="close-btn" onclick="closeCameraModal()">&times;</span>
         <div class="cam-box">
             <video id="v" autoplay playsinline muted></video>
             <img id="p" class="snap-img" style="display:none;">
@@ -434,21 +445,44 @@
     }
 
     async function startCam() {
+        stopCam();
         const video = document.getElementById('v');
-        if (streamRef) { streamRef.getTracks().forEach(t => t.stop()); }
+        
+        // Mobile browsers compatibility configuration
+        const constraints = {
+            video: {
+                facingMode: { ideal: "user" },
+                width: { ideal: 640 },
+                height: { ideal: 480 }
+            },
+            audio: false
+        };
+
         try {
-            streamRef = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: 480 } });
+            streamRef = await navigator.mediaDevices.getUserMedia(constraints);
             video.srcObject = streamRef;
-            video.play();
+            await video.play();
         } catch (e) { 
-            console.log(e);
-            Swal.fire({ icon: 'error', title: 'Camera Error', text: 'Close other apps and try again.' });
+            console.error("Camera Error: ", e);
+            // Fallback constraint agar specific ideal mode fail ho jaye
+            try {
+                streamRef = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                video.srcObject = streamRef;
+                await video.play();
+            } catch(fallbackErr) {
+                Swal.fire({ 
+                    icon: 'error', 
+                    title: 'Camera Error', 
+                    text: 'Camera access nahi mil raha hai. Kripya browser me Camera permission allow karein.' 
+                });
+                closeCameraModal();
+            }
         }
     }
 
     function stopCam() {
         if (streamRef) {
-            streamRef.getTracks().forEach(t => t.stop());
+            streamRef.getTracks().forEach(track => track.stop());
             streamRef = null;
         }
     }
@@ -496,11 +530,21 @@
         startCam();
     }
 
+    function closeCameraModal() {
+        document.getElementById('camModal').style.display = 'none';
+        stopCam();
+    }
+
     function snap() {
         const video = document.getElementById('v');
         const cn = document.getElementById('c');
-        cn.width = 400; cn.height = 500;
-        cn.getContext('2d').drawImage(video, 0, 0, 400, 500);
+        
+        if (!video.videoWidth) return;
+
+        cn.width = video.videoWidth || 400; 
+        cn.height = video.videoHeight || 500;
+        cn.getContext('2d').drawImage(video, 0, 0, cn.width, cn.height);
+        
         b64 = cn.toDataURL('image/jpeg', 0.6); 
         document.getElementById('p').src = b64; 
         document.getElementById('p').style.display = "block"; 
@@ -517,8 +561,7 @@
             return;
         }
 
-        document.getElementById('camModal').style.display = 'none';
-        stopCam();
+        closeCameraModal();
         send(currentActionType);
     }
 
