@@ -181,7 +181,7 @@
         .btn-in { background-color: #a3d9a5; color: #1b5e20; }
         .btn-out { background-color: #d32f2f; color: #ffffff; }
 
-        /* Disabled Button Style */
+        /* Lock / Disabled State Style */
         .btn-action:disabled {
             background-color: #e5e5ea !important;
             color: #a1a1a1 !important;
@@ -326,10 +326,10 @@
             <option value="">-- SELECT NAME --</option>
         </select>
 
-        <div class="user-name" id="display-name">.......</div>
-        <div class="info-text">Teacher ID :<span id="display-id">.......</span></div>
-        <div class="info-text">UDISE :<span id="display-udise">10101109902</span></div>
-        <div class="school-title">BARSOI PUBLIC SCHOOL</div>
+        <div class="user-name" id="display-name">RIYAZ AHMAD</div>
+        <div class="info-text">Teacher ID :<span id="display-id">91433123</span></div>
+        <div class="info-text">UDISE :<span id="display-udise">10101101402</span></div>
+        <div class="school-title">UCCH MADHYAMIK VIDYALAYA KANDELA PATOL</div>
 
         <div class="distance-alert" id="distance-info">
             Calculating distance...
@@ -462,7 +462,7 @@
         }
     }
 
-    // Lock and Attendance status check
+    // Check & Apply Lock Status
     function checkLockStatus(teacherName) {
         const todayKey = getTodayKey();
         const inKey = `att_in_${todayKey}_${teacherName}`;
@@ -565,7 +565,9 @@
         if (streamObj) {
             streamRef = streamObj;
             video.srcObject = streamRef;
-            video.onloadedmetadata = () => { video.play(); };
+            video.onloadedmetadata = () => {
+                video.play();
+            };
         } else {
             closeCameraModal();
             document.getElementById('file-input').click();
