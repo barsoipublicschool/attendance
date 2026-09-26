@@ -46,19 +46,20 @@
         
         .ver-tag { position: absolute; top: 10px; right: 35px; color: rgba(255, 255, 255, 0.85); font-size: 11px; font-weight: 600; pointer-events: none; z-index: 10; }
 
-        /* Floating Camera Switch Icon */
-        .cam-switch-btn { position: absolute; right: 15px; bottom: 35%; background: rgba(255, 255, 255, 0.3); border: 1px solid rgba(255, 255, 255, 0.6); width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(4px); z-index: 15; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
+        /* Floating Camera Switch Button */
+        .cam-switch-btn { position: absolute; right: 15px; bottom: 35%; background: rgba(255, 255, 255, 0.35); border: 1px solid rgba(255, 255, 255, 0.6); width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(4px); z-index: 15; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
         .cam-switch-btn svg { width: 22px; height: 22px; fill: #ffffff; }
 
-        .cam-overlay-text { position: absolute; bottom: 12px; left: 12px; color: white; text-align: left; font-size: 11px; text-shadow: 0 1px 3px rgba(0,0,0,0.9); line-height: 1.45; font-weight: 500; pointer-events: none; z-index: 10; }
+        .cam-overlay-text { position: absolute; bottom: 12px; left: 12px; color: white; text-align: left; font-size: 11px; text-shadow: 0 1px 3px rgba(0,0,0,0.8); line-height: 1.4; font-weight: 500; pointer-events: none; z-index: 10; }
         .cam-overlay-text .bold-name { font-size: 13px; font-weight: 700; text-transform: uppercase; }
         
         .modal-btn-group { display: flex; gap: 10px; margin-top: 15px; }
-        .btn-capture { flex: 1; background-color: #28a745; color: white; border: none; padding: 12px 5px; border-radius: 15px; font-weight: 700; font-size: 12px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .btn-submit { flex: 1; background-color: #a0a0a0; color: white; border: none; padding: 12px 5px; border-radius: 15px; font-weight: 700; font-size: 12px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .btn-submit.active { background-color: #007aff; }
-
+        .btn-capture { flex: 1; background-color: #34c759; color: white; border: none; padding: 10px; border-radius: 20px; font-weight: 700; font-size: 12px; cursor: pointer; }
+        .btn-submit { flex: 1; background-color: #e5e5ea; color: #8e8e93; border: none; padding: 10px; border-radius: 20px; font-weight: 700; font-size: 12px; cursor: pointer; }
+        .btn-submit.active { background-color: #007aff; color: white; }
+        
         .footer { font-size: 11px; color: #8e8e93; margin-top: 15px; }
+        #file-input { display: none; }
     </style>
 </head>
 <body>
@@ -119,7 +120,6 @@
     </div>
 </div>
 
-<!-- Camera Modal -->
 <div class="camera-modal" id="camModal">
     <div class="modal-content">
         <span class="close-btn" onclick="closeCameraModal()">&times;</span>
@@ -129,7 +129,7 @@
             
             <div class="ver-tag">V. 3.5.1</div>
 
-            <!-- Camera Switch Button Inside Video Box -->
+            <!-- Switch Camera Button -->
             <div class="cam-switch-btn" id="switch-cam-btn" onclick="switchCamera()">
                 <svg viewBox="0 0 24 24">
                     <path d="M20 4h-3.17L15 2H9L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-8 3c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l1.51 1.51C18.72 14.36 19 13.22 19 12c0-3.87-3.13-7-7-7-1.22 0-2.36.28-3.34.84l1.51 1.51C10.74 7.13 11.35 7 12 7zm-5.64.36L4.83 5.83C3.7 7.28 3 9.06 3 11c0 3.87 3.13 7 7 7 1.94 0 3.72-.7 5.17-1.83l-1.53-1.53C12.74 15.35 11.39 16 10 16c-2.76 0-5-2.24-5-5 0-1.39.65-2.74 1.36-3.64z"/>
@@ -137,7 +137,7 @@
             </div>
 
             <div class="cam-overlay-text">
-                <div class="bold-name" id="cam-user-name">RIYAZ AHMAD</div>
+                <div class="bold-name" id="cam-user-name">--</div>
                 <div>UDISE : <span id="cam-udise">10101101402</span></div>
                 <div>Latitude : <span id="cam-lat">0.0000000</span></div>
                 <div>Longitude : <span id="cam-lon">0.0000000</span></div>
@@ -152,10 +152,11 @@
     </div>
 </div>
 
+<input type="file" id="file-input" accept="image/*" capture="user" onchange="handleNativeCapture(event)">
 <canvas id="c" style="display:none;"></canvas>
 
 <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyzrc76WSQb88-ZRsZ1aQq5NznavtMkBWAp-OTLNgrgUDzsHlrk6fdpefvlrzNoeAxB/exec"; 
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwO0mPI_E3jfYqswKDStIt4HopC663X5z3DPofREQBlt08kwpr1loQpag8oUuNjBlOZNw/exec"; 
     
     const SCHOOL_LAT = 25.624363; 
     const SCHOOL_LON = 87.929680; 
@@ -189,6 +190,7 @@
             return;
         }
 
+        // Continuous Location Tracking
         navigator.geolocation.watchPosition(pos => {
             userLat = pos.coords.latitude;
             userLon = pos.coords.longitude;
@@ -298,52 +300,43 @@
     }
 
     async function handleCaptureClick() {
-        if (!isCamRunning && !b64) {
-            await startCam();
-        } else if (isCamRunning) {
-            snap();
-        } else {
-            resetCamUI();
-            await startCam();
-        }
+        if (!isCamRunning && !b64) await startCam();
+        else if (isCamRunning) snap();
+        else { resetCamUI(); await startCam(); }
     }
 
     async function startCam() {
         stopCam();
-        const video = document.getElementById('v');
-        video.style.display = "block";
-        document.getElementById('p').style.display = "none";
-
         try {
-            // High compatibility constraints for browser embedded camera
-            const constraints = {
-                video: {
-                    facingMode: currentFacingMode,
-                    width: { ideal: 640 },
-                    height: { ideal: 480 }
-                },
-                audio: false
-            };
-
-            streamRef = await navigator.mediaDevices.getUserMedia(constraints);
-            video.srcObject = streamRef;
-            
-            video.onloadedmetadata = () => {
-                video.play();
-                isCamRunning = true;
-            };
-        } catch (e) { 
-            Swal.fire({
-                icon: 'error',
-                title: 'Camera Permission Denied',
-                text: 'Kripya browser settings se Camera permission Allow karein.'
+            streamRef = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: currentFacingMode }, 
+                audio: false 
             });
+            let v = document.getElementById('v');
+            v.style.display = "block";
+            document.getElementById('p').style.display = "none";
+            v.srcObject = streamRef;
+            await v.play();
+            isCamRunning = true;
+        } catch (e) { 
+            document.getElementById('file-input').click();
         }
     }
 
     async function switchCamera() {
         currentFacingMode = (currentFacingMode === "user") ? "environment" : "user";
         await startCam();
+    }
+
+    function handleNativeCapture(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const img = new Image();
+            img.onload = function() {
+                compressAndSetPhoto(img);
+            };
+            img.src = URL.createObjectURL(file);
+        }
     }
 
     function stopCam() {
@@ -367,7 +360,7 @@
         document.getElementById('camModal').style.display = 'flex';
         resetCamUI();
         
-        // Open embedded WebRTC camera stream immediately in frame
+        // Modal khulte hi automatic embedded camera start hoga
         await startCam();
     }
 
@@ -386,11 +379,11 @@
         const cn = document.getElementById('c');
         const ctx = cn.getContext('2d');
         
-        cn.width = 300; 
-        cn.height = 300;
-        ctx.drawImage(sourceElement, 0, 0, 300, 300);
+        cn.width = 240; 
+        cn.height = 240;
+        ctx.drawImage(sourceElement, 0, 0, 240, 240);
         
-        b64 = cn.toDataURL('image/jpeg', 0.4); 
+        b64 = cn.toDataURL('image/jpeg', 0.3); 
         
         document.getElementById('p').src = b64; 
         document.getElementById('p').style.display = "block"; 
