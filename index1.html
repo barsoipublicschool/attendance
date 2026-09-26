@@ -37,26 +37,26 @@
         .btn-out { background-color: #d32f2f; color: #ffffff; }
         .btn-action:disabled { background-color: #e5e5ea !important; color: #8e8e93 !important; cursor: not-allowed; box-shadow: none; opacity: 0.7; }
         
-        /* Camera Modal Styles */
+        /* Modal and Camera UI */
         .camera-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 1000; justify-content: center; align-items: center; padding: 15px; }
         .modal-content { background: white; border-radius: 20px; width: 100%; max-width: 360px; padding: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center; position: relative; }
-        .close-btn { position: absolute; top: 10px; right: 15px; font-size: 22px; font-weight: bold; color: #8e8e93; cursor: pointer; z-index: 10; }
+        .close-btn { position: absolute; top: 8px; right: 12px; font-size: 22px; font-weight: bold; color: #ffffff; cursor: pointer; z-index: 20; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
         .cam-box { width: 100%; border-radius: 16px; overflow: hidden; aspect-ratio: 4/5; background: #000; position: relative; display: flex; align-items: center; justify-content: center; }
-        video, img.snap-img { width: 100%; height: 100%; object-fit: cover; }
+        video, img.snap-img { width: 100%; height: 100%; object-fit: cover; display: block; }
         
         /* Version Tag Upper Right */
-        .ver-tag { position: absolute; top: 10px; right: 12px; color: rgba(255, 255, 255, 0.7); font-size: 11px; font-weight: 600; pointer-events: none; }
+        .ver-tag { position: absolute; top: 10px; right: 35px; color: rgba(255, 255, 255, 0.85); font-size: 11px; font-weight: 600; pointer-events: none; z-index: 10; }
 
         /* Camera Switch Button Overlay */
-        .cam-switch-btn { position: absolute; right: 15px; bottom: 35%; background: rgba(255, 255, 255, 0.25); border: 1px solid rgba(255, 255, 255, 0.5); width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(4px); z-index: 5; }
-        .cam-switch-btn svg { width: 22px; height: 22px; fill: #ffffff; }
+        .cam-switch-btn { position: absolute; right: 15px; bottom: 35%; background: rgba(255, 255, 255, 0.35); border: 1px solid rgba(255, 255, 255, 0.6); width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(5px); z-index: 15; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
+        .cam-switch-btn svg { width: 24px; height: 24px; fill: #ffffff; }
 
-        .cam-overlay-text { position: absolute; bottom: 12px; left: 12px; color: white; text-align: left; font-size: 11px; text-shadow: 0 1px 3px rgba(0,0,0,0.8); line-height: 1.4; font-weight: 500; pointer-events: none; }
+        .cam-overlay-text { position: absolute; bottom: 12px; left: 12px; color: white; text-align: left; font-size: 11px; text-shadow: 0 1px 3px rgba(0,0,0,0.9); line-height: 1.45; font-weight: 500; pointer-events: none; z-index: 10; }
         .cam-overlay-text .bold-name { font-size: 13px; font-weight: 700; text-transform: uppercase; }
         
         .modal-btn-group { display: flex; gap: 10px; margin-top: 15px; }
-        .btn-capture { flex: 1; background-color: #28a745; color: white; border: none; padding: 12px 5px; border-radius: 15px; font-weight: 700; font-size: 12px; cursor: pointer; }
-        .btn-submit { flex: 1; background-color: #a0a0a0; color: white; border: none; padding: 12px 5px; border-radius: 15px; font-weight: 700; font-size: 12px; cursor: pointer; }
+        .btn-capture { flex: 1; background-color: #28a745; color: white; border: none; padding: 12px 5px; border-radius: 15px; font-weight: 700; font-size: 12px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .btn-submit { flex: 1; background-color: #a0a0a0; color: white; border: none; padding: 12px 5px; border-radius: 15px; font-weight: 700; font-size: 12px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .btn-submit.active { background-color: #007aff; }
 
         .footer { font-size: 11px; color: #8e8e93; margin-top: 15px; }
@@ -131,7 +131,7 @@
             
             <div class="ver-tag">V. 3.5.1</div>
 
-            <!-- Switch Camera Button -->
+            <!-- Switch Camera Floating Button -->
             <div class="cam-switch-btn" id="switch-cam-btn" onclick="switchCamera()">
                 <svg viewBox="0 0 24 24">
                     <path d="M20 4h-3.17L15 2H9L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-8 3c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l1.51 1.51C18.72 14.36 19 13.22 19 12c0-3.87-3.13-7-7-7-1.22 0-2.36.28-3.34.84l1.51 1.51C10.74 7.13 11.35 7 12 7zm-5.64.36L4.83 5.83C3.7 7.28 3 9.06 3 11c0 3.87 3.13 7 7 7 1.94 0 3.72-.7 5.17-1.83l-1.53-1.53C12.74 15.35 11.39 16 10 16c-2.76 0-5-2.24-5-5 0-1.39.65-2.74 1.36-3.64z"/>
@@ -168,7 +168,7 @@
     let currentActionType = "";
     let userLat = 0, userLon = 0;
     let isCamRunning = false;
-    let currentFacingMode = "user"; // 'user' (Front) or 'environment' (Back)
+    let currentFacingMode = "user"; 
     let teachersDataMap = {}; 
 
     function getDistance(lat1, lon1, lat2, lon2) {
@@ -308,25 +308,43 @@
 
     async function startCam() {
         stopCam();
+        const video = document.getElementById('v');
+        video.style.display = "block";
+        document.getElementById('p').style.display = "none";
+
         try {
-            streamRef = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: currentFacingMode }, 
-                audio: false 
-            });
-            let v = document.getElementById('v');
-            v.srcObject = streamRef;
-            await v.play();
+            const constraints = {
+                video: {
+                    facingMode: { exact: currentFacingMode },
+                    width: { ideal: 640 },
+                    height: { ideal: 480 }
+                },
+                audio: false
+            };
+
+            streamRef = await navigator.mediaDevices.getUserMedia(constraints);
+            video.srcObject = streamRef;
+            await video.play();
             isCamRunning = true;
         } catch (e) { 
-            document.getElementById('file-input').click();
+            // Fallback for browsers that don't support 'exact' facingMode
+            try {
+                streamRef = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: currentFacingMode }, 
+                    audio: false 
+                });
+                video.srcObject = streamRef;
+                await video.play();
+                isCamRunning = true;
+            } catch (fallbackErr) {
+                document.getElementById('file-input').click();
+            }
         }
     }
 
     async function switchCamera() {
         currentFacingMode = (currentFacingMode === "user") ? "environment" : "user";
-        if (isCamRunning) {
-            await startCam();
-        }
+        await startCam();
     }
 
     function handleNativeCapture(event) {
@@ -361,7 +379,7 @@
         document.getElementById('camModal').style.display = 'flex';
         resetCamUI();
         
-        // DIRECT CAMERA OPEN ON CLICK
+        // Auto Start Camera Stream
         await startCam();
     }
 
