@@ -221,9 +221,6 @@
             aspect-ratio: 4/5;
             background: #000;
             position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
         video, img.snap-img {
@@ -291,7 +288,6 @@
             margin-top: 15px;
         }
 
-        /* Direct File Input Fallback (if browser blocks WebCam API entirely) */
         #file-input { display: none; }
     </style>
 </head>
@@ -344,8 +340,8 @@
         </div>
 
         <div class="btn-group">
-            <button class="btn-action btn-in" onclick="openCameraModal('check-in')">Mark In/<br>हाजिरी दर्ज करें</button>
-            <button class="btn-action btn-out" onclick="openCameraModal('check-out')">Mark Out/<br>कार्यविधि समाप्ति दर्ज करें</button>
+            <button class="btn-action btn-in" onclick="requestPermissionAndOpen('check-in')">Mark In/<br>हाजिरी दर्ज करें</button>
+            <button class="btn-action btn-out" onclick="requestPermissionAndOpen('check-out')">Mark Out/<br>कार्यविधि समाप्ति दर्ज करें</button>
         </div>
 
         <div class="footer">
@@ -372,21 +368,18 @@
         </div>
 
         <div class="modal-btn-group">
-            <button class="btn-capture" id="snBtn" onclick="handleCaptureClick()">Capture/<br>फोटो लें</button>
+            <button class="btn-capture" id="snBtn" onclick="snap()">Capture/<br>फोटो लें</button>
             <button class="btn-submit" id="subBtn" onclick="submitAttendance()">Mark Attendance/<br>उपस्थिति दर्ज करें</button>
         </div>
     </div>
 </div>
 
-<!-- Native Native Camera Input Fallback -->
 <input type="file" id="file-input" accept="image/*" capture="user" onchange="handleNativeCapture(event)">
-
 <canvas id="c" style="display:none;"></canvas>
 
 <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyzrc76WSQb88-ZRsZ1aQq5NznavtMkBWAp-OTLNgrgUDzsHlrk6fdpefvlrzNoeAxB/exec"; 
     
-    // --- SCHOOL COORDINATES ---
     const SCHOOL_LAT = 25.624363; 
     const SCHOOL_LON = 87.929680; 
     const MAX_DIST = 0.5; 
@@ -394,7 +387,6 @@
     let b64 = "", streamRef = null;
     let currentActionType = "";
     let userLat = 0, userLon = 0;
-    let isCamRunning = false;
 
     function getDistance(lat1, lon1, lat2, lon2) {
         const R = 6371; 
@@ -446,34 +438,73 @@
         }, 1000);
     }
 
-    async function handleCaptureClick() {
-        if (!isCamRunning && !b64) {
-            // User gesture se Camera open karna (Fixes Permission Denied issue)
-            await startCam();
-        } else if (isCamRunning) {
-            snap();
-        } else {
-            // Retake logic
-            resetCamUI();
-            await startCam();
+    // Step 1: Explicit Permission Prompt Trigger
+    function requestPermissionAndOpen(type) {
+        const cid = document.getElementById('classList').value;
+        const name = document.getElementById('sList').value;
+
+        if(!cid || !name) {
+            Swal.fire({ icon: 'warning', title: 'Please Select', text: 'Select Category and Name First!', confirmButtonColor: '#2e7d32' });
+            return;
         }
+
+        currentActionType = type;
+
+        Swal.fire({
+            title: 'Camera Permission Required',
+            text: 'Kripya camera start karne ke liye Allow/OK button par click karein.',
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonColor: '#007aff',
+            confirmButtonText: 'OK / Open Camera',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                openCameraModal();
+            }
+        });
     }
 
-    async function startCam() {
+    // Step 2: Open Modal and initialize camera hardware stream
+    async function openCameraModal() {
+        document.getElementById('cam-lat').innerText = userLat.toFixed(7);
+        document.getElementById('cam-lon').innerText = userLon.toFixed(7);
+        document.getElementById('camModal').style.display = 'flex';
+        resetCamUI();
+
+        await initCameraStream();
+    }
+
+    async function initCameraStream() {
         stopCam();
         const video = document.getElementById('v');
 
-        try {
-            streamRef = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: "user" },
-                audio: false
-            });
+        const configs = [
+            { video: { facingMode: { exact: "user" } }, audio: false },
+            { video: { facingMode: "user" }, audio: false },
+            { video: true, audio: false }
+        ];
+
+        let streamObj = null;
+
+        for (let config of configs) {
+            try {
+                streamObj = await navigator.mediaDevices.getUserMedia(config);
+                if (streamObj) break;
+            } catch (err) {
+                console.warn("Retrying constraint:", config);
+            }
+        }
+
+        if (streamObj) {
+            streamRef = streamObj;
             video.srcObject = streamRef;
-            await video.play();
-            isCamRunning = true;
-        } catch (e) { 
-            console.warn("Direct camera streaming blocked by browser. Using native camera intent fallback.");
-            // Native Mobile Camera Dialog fallback agar browser `getUserMedia` block kar de
+            video.onloadedmetadata = () => {
+                video.play();
+            };
+        } else {
+            // Fallback for strict Android browsers blocking inline video streams
+            closeCameraModal();
             document.getElementById('file-input').click();
         }
     }
@@ -487,13 +518,17 @@
                 document.getElementById('p').src = b64;
                 document.getElementById('p').style.display = "block";
                 document.getElementById('v').style.display = "none";
-                
+                document.getElementById('camModal').style.display = 'flex';
                 document.getElementById('snBtn').innerHTML = "Retake/<br>पुनः फोटो लें";
                 document.getElementById('subBtn').classList.add('active');
-                isCamRunning = false;
             };
             reader.readAsDataURL(file);
         }
+    }
+
+    function closeCameraModal() {
+        document.getElementById('camModal').style.display = 'none';
+        stopCam();
     }
 
     function stopCam() {
@@ -501,7 +536,30 @@
             streamRef.getTracks().forEach(track => track.stop());
             streamRef = null;
         }
-        isCamRunning = false;
+    }
+
+    function snap() {
+        const video = document.getElementById('v');
+        const cn = document.getElementById('c');
+        
+        if (video.style.display !== "none" && video.videoWidth > 0) {
+            cn.width = video.videoWidth; 
+            cn.height = video.videoHeight;
+            cn.getContext('2d').drawImage(video, 0, 0, cn.width, cn.height);
+            b64 = cn.toDataURL('image/jpeg', 0.6); 
+            document.getElementById('p').src = b64; 
+            document.getElementById('p').style.display = "block"; 
+            video.style.display = "none";
+            stopCam();
+        } else {
+            // Retake Trigger
+            resetCamUI();
+            initCameraStream();
+            return;
+        }
+
+        document.getElementById('snBtn').innerHTML = "Retake/<br>पुनः फोटो लें";
+        document.getElementById('subBtn').classList.add('active');
     }
 
     function saveClassAndLoad() {
@@ -527,48 +585,6 @@
             document.getElementById('display-name').innerText = name;
             document.getElementById('cam-user-name').innerText = name;
         }
-    }
-
-    function openCameraModal(type) {
-        const cid = document.getElementById('classList').value;
-        const name = document.getElementById('sList').value;
-
-        if(!cid || !name) {
-            Swal.fire({ icon: 'warning', title: 'Please Select', text: 'Select Category and Name First!', confirmButtonColor: '#2e7d32' });
-            return;
-        }
-
-        currentActionType = type;
-        document.getElementById('cam-lat').innerText = userLat.toFixed(7);
-        document.getElementById('cam-lon').innerText = userLon.toFixed(7);
-        
-        document.getElementById('camModal').style.display = 'flex';
-        resetCamUI();
-    }
-
-    function closeCameraModal() {
-        document.getElementById('camModal').style.display = 'none';
-        stopCam();
-    }
-
-    function snap() {
-        const video = document.getElementById('v');
-        const cn = document.getElementById('c');
-        
-        if (!video.videoWidth) return;
-
-        cn.width = video.videoWidth || 400; 
-        cn.height = video.videoHeight || 500;
-        cn.getContext('2d').drawImage(video, 0, 0, cn.width, cn.height);
-        
-        b64 = cn.toDataURL('image/jpeg', 0.6); 
-        document.getElementById('p').src = b64; 
-        document.getElementById('p').style.display = "block"; 
-        video.style.display = "none";
-        
-        stopCam();
-        document.getElementById('snBtn').innerHTML = "Retake/<br>पुनः फोटो लें";
-        document.getElementById('subBtn').classList.add('active');
     }
 
     function submitAttendance() {
