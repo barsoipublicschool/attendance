@@ -5,289 +5,61 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>e-Shikshakosh Attendance UI</title>
     
-    <!-- SweetAlert2 CSS & JS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
-        * {
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
-
-        body {
-            background-color: #f7f4f8;
-            margin: 0;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        .top-bar {
-            width: 100%;
-            max-width: 380px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 700;
-            font-size: 16px;
-            color: #000;
-            margin-bottom: 15px;
-            padding: 5px 0;
-        }
-
-        .card {
-            background: #ffffff;
-            width: 100%;
-            max-width: 380px;
-            border-radius: 16px;
-            padding: 20px 15px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            text-align: center;
-            position: relative;
-        }
-
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background-color: #f7f4f8; margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        .top-bar { width: 100%; max-width: 380px; display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 16px; color: #000; margin-bottom: 15px; padding: 5px 0; }
+        .card { background: #ffffff; width: 100%; max-width: 380px; border-radius: 16px; padding: 20px 15px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); text-align: center; position: relative; }
         #main-ui { display: none; }
         #loader { padding: 30px 10px; }
-
-        .profile-avatar {
-            width: 75px;
-            height: 75px;
-            background-color: #d1c4e9;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: -45px auto 10px auto;
-            border: 3px solid #ffffff;
-        }
-
-        .profile-avatar svg {
-            width: 45px;
-            height: 45px;
-            fill: #1f1f1f;
-        }
-
-        .user-name {
-            font-size: 17px;
-            font-weight: 800;
-            color: #000;
-            letter-spacing: 0.5px;
-            margin-bottom: 4px;
-            text-transform: uppercase;
-        }
-
-        .info-text {
-            color: #8e8e93;
-            font-size: 13px;
-            margin: 3px 0;
-            font-weight: 500;
-        }
-
-        .info-text span {
-            color: #000;
-            font-weight: 600;
-        }
-
-        .school-title {
-            font-size: 13px;
-            font-weight: 700;
-            color: #2c2c2e;
-            margin: 12px 0 15px 0;
-            text-transform: uppercase;
-        }
-
-        .select-box {
-            width: 100%;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #d1d1d6;
-            background: #fff;
-            margin-bottom: 10px;
-            font-size: 14px;
-            font-weight: 600;
-            color: #3a3a3c;
-            outline: none;
-        }
-
-        .distance-alert {
-            background-color: #fde8e8;
-            border: 1px solid #f8b4b4;
-            color: #d9534f;
-            border-radius: 8px;
-            padding: 10px;
-            font-size: 13px;
-            line-height: 1.4;
-            margin: 10px 0 15px 0;
-            font-weight: 500;
-        }
-
-        .time-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 15px 0;
-            padding: 0 5px;
-        }
-
-        .time-box {
-            flex: 1;
-            text-align: center;
-        }
-
-        .time-label {
-            color: #8e8e93;
-            font-size: 12px;
-            line-height: 1.3;
-        }
-
-        .time-value {
-            font-size: 16px;
-            font-weight: 700;
-            margin-top: 4px;
-        }
-
+        .profile-avatar { width: 75px; height: 75px; background-color: #d1c4e9; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: -45px auto 10px auto; border: 3px solid #ffffff; overflow: hidden; }
+        .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .profile-avatar svg { width: 45px; height: 45px; fill: #1f1f1f; }
+        .user-name { font-size: 17px; font-weight: 800; color: #000; letter-spacing: 0.5px; margin-bottom: 4px; text-transform: uppercase; }
+        .info-text { color: #8e8e93; font-size: 13px; margin: 3px 0; font-weight: 500; }
+        .info-text span { color: #000; font-weight: 600; }
+        .school-title { font-size: 13px; font-weight: 700; color: #2c2c2e; margin: 12px 0 15px 0; text-transform: uppercase; }
+        .select-box { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #d1d1d6; background: #fff; margin-bottom: 10px; font-size: 14px; font-weight: 600; color: #3a3a3c; outline: none; }
+        .distance-alert { background-color: #fde8e8; border: 1px solid #f8b4b4; color: #d9534f; border-radius: 8px; padding: 10px; font-size: 13px; line-height: 1.4; margin: 10px 0 15px 0; font-weight: 500; }
+        .time-container { display: flex; justify-content: space-between; align-items: center; margin: 15px 0; padding: 0 5px; }
+        .time-box { flex: 1; text-align: center; }
+        .time-label { color: #8e8e93; font-size: 12px; line-height: 1.3; }
+        .time-value { font-size: 16px; font-weight: 700; margin-top: 4px; }
         .time-value.green { color: #34c759; }
         .time-value.red { color: #ff3b30; }
-
-        .divider {
-            width: 1px;
-            height: 35px;
-            background-color: #e5e5ea;
-            margin: 0 10px;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 12px;
-            margin-top: 15px;
-        }
-
-        .btn-action {
-            flex: 1;
-            padding: 12px 8px;
-            border-radius: 10px;
-            border: none;
-            font-size: 13px;
-            font-weight: 700;
-            color: white;
-            cursor: pointer;
-            line-height: 1.3;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .btn-in { background-color: #a3d9a5; color: #1b5e20; }
+        .divider { width: 1px; height: 35px; background-color: #e5e5ea; margin: 0 10px; }
+        .btn-group { display: flex; gap: 12px; margin-top: 15px; }
+        .btn-action { flex: 1; padding: 12px 8px; border-radius: 10px; border: none; font-size: 13px; font-weight: 700; color: white; cursor: pointer; line-height: 1.3; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .btn-in { background-color: #34c759; color: #ffffff; }
         .btn-out { background-color: #d32f2f; color: #ffffff; }
+        .btn-action:disabled { background-color: #e5e5ea !important; color: #8e8e93 !important; cursor: not-allowed; box-shadow: none; opacity: 0.7; }
+        
+        /* Camera Modal Styles */
+        .camera-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 1000; justify-content: center; align-items: center; padding: 15px; }
+        .modal-content { background: white; border-radius: 20px; width: 100%; max-width: 360px; padding: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center; position: relative; }
+        .close-btn { position: absolute; top: 10px; right: 15px; font-size: 22px; font-weight: bold; color: #8e8e93; cursor: pointer; z-index: 10; }
+        .cam-box { width: 100%; border-radius: 16px; overflow: hidden; aspect-ratio: 4/5; background: #000; position: relative; display: flex; align-items: center; justify-content: center; }
+        video, img.snap-img { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* Version Tag Upper Right */
+        .ver-tag { position: absolute; top: 10px; right: 12px; color: rgba(255, 255, 255, 0.7); font-size: 11px; font-weight: 600; pointer-events: none; }
 
-        .camera-modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            padding: 15px;
-        }
+        /* Camera Switch Button Overlay */
+        .cam-switch-btn { position: absolute; right: 15px; bottom: 35%; background: rgba(255, 255, 255, 0.25); border: 1px solid rgba(255, 255, 255, 0.5); width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(4px); z-index: 5; }
+        .cam-switch-btn svg { width: 22px; height: 22px; fill: #ffffff; }
 
-        .modal-content {
-            background: white;
-            border-radius: 20px;
-            width: 100%;
-            max-width: 360px;
-            padding: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            text-align: center;
-            position: relative;
-        }
+        .cam-overlay-text { position: absolute; bottom: 12px; left: 12px; color: white; text-align: left; font-size: 11px; text-shadow: 0 1px 3px rgba(0,0,0,0.8); line-height: 1.4; font-weight: 500; pointer-events: none; }
+        .cam-overlay-text .bold-name { font-size: 13px; font-weight: 700; text-transform: uppercase; }
+        
+        .modal-btn-group { display: flex; gap: 10px; margin-top: 15px; }
+        .btn-capture { flex: 1; background-color: #28a745; color: white; border: none; padding: 12px 5px; border-radius: 15px; font-weight: 700; font-size: 12px; cursor: pointer; }
+        .btn-submit { flex: 1; background-color: #a0a0a0; color: white; border: none; padding: 12px 5px; border-radius: 15px; font-weight: 700; font-size: 12px; cursor: pointer; }
+        .btn-submit.active { background-color: #007aff; }
 
-        .close-btn {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 22px;
-            font-weight: bold;
-            color: #8e8e93;
-            cursor: pointer;
-            z-index: 10;
-        }
-
-        .cam-box {
-            width: 100%;
-            border-radius: 16px;
-            overflow: hidden;
-            aspect-ratio: 4/5;
-            background: #000;
-            position: relative;
-        }
-
-        video, img.snap-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .cam-overlay-text {
-            position: absolute;
-            bottom: 12px;
-            left: 12px;
-            color: white;
-            text-align: left;
-            font-size: 11px;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
-            line-height: 1.4;
-            font-weight: 500;
-            pointer-events: none;
-        }
-
-        .cam-overlay-text .bold-name {
-            font-size: 13px;
-            font-weight: 700;
-        }
-
-        .modal-btn-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .btn-capture {
-            flex: 1;
-            background-color: #34c759;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 20px;
-            font-weight: 700;
-            font-size: 12px;
-            cursor: pointer;
-        }
-
-        .btn-submit {
-            flex: 1;
-            background-color: #e5e5ea;
-            color: #8e8e93;
-            border: none;
-            padding: 10px;
-            border-radius: 20px;
-            font-weight: 700;
-            font-size: 12px;
-            cursor: pointer;
-        }
-
-        .btn-submit.active {
-            background-color: #007aff;
-            color: white;
-        }
-
-        .footer {
-            font-size: 11px;
-            color: #8e8e93;
-            margin-top: 15px;
-        }
-
+        .footer { font-size: 11px; color: #8e8e93; margin-top: 15px; }
         #file-input { display: none; }
     </style>
 </head>
@@ -304,8 +76,9 @@
     </div>
 
     <div id="main-ui">
-        <div class="profile-avatar">
-            <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        <div class="profile-avatar" id="avatar-container">
+            <svg id="default-avatar-svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            <img id="user-photo-img" src="" style="display:none;" alt="User Photo">
         </div>
 
         <select id="classList" class="select-box" onchange="saveClassAndLoad()">
@@ -318,14 +91,12 @@
             <option value="">-- SELECT NAME --</option>
         </select>
 
-        <div class="user-name" id="display-name">RIYAZ AHMAD</div>
-        <div class="info-text">Teacher ID :<span id="display-id">91433123</span></div>
+        <div class="user-name" id="display-name">SELECT TEACHER</div>
+        <div class="info-text">Teacher ID :<span id="display-id">--</span></div>
         <div class="info-text">UDISE :<span id="display-udise">10101101402</span></div>
         <div class="school-title">UCCH MADHYAMIK VIDYALAYA KANDELA PATOL</div>
 
-        <div class="distance-alert" id="distance-info">
-            Calculating distance...
-        </div>
+        <div class="distance-alert" id="distance-info">Calculating distance...</div>
 
         <div class="time-container">
             <div class="time-box">
@@ -335,13 +106,13 @@
             <div class="divider"></div>
             <div class="time-box">
                 <div class="time-label">School Out time/<br>कार्यविधि समाप्ति :</div>
-                <div class="time-value red" id="out-time-display">--</div>
+                <div class="time-value red" id="out-time-display">--:-- --</div>
             </div>
         </div>
 
         <div class="btn-group">
-            <button class="btn-action btn-in" onclick="requestPermissionAndOpen('check-in')">Mark In/<br>हाजिरी दर्ज करें</button>
-            <button class="btn-action btn-out" onclick="requestPermissionAndOpen('check-out')">Mark Out/<br>कार्यविधि समाप्ति दर्ज करें</button>
+            <button id="btn-in-id" class="btn-action btn-in" onclick="openCameraModal('check-in')">Mark In/<br>हाजिरी दर्ज करें</button>
+            <button id="btn-out-id" class="btn-action btn-out" onclick="openCameraModal('check-out')" disabled>Mark Out/<br>कार्यविधि समाप्ति दर्ज करें</button>
         </div>
 
         <div class="footer">
@@ -350,7 +121,7 @@
     </div>
 </div>
 
-<!-- Camera Modal View Popup -->
+<!-- Camera Modal -->
 <div class="camera-modal" id="camModal">
     <div class="modal-content">
         <span class="close-btn" onclick="closeCameraModal()">&times;</span>
@@ -358,6 +129,15 @@
             <video id="v" autoplay playsinline muted></video>
             <img id="p" class="snap-img" style="display:none;">
             
+            <div class="ver-tag">V. 3.5.1</div>
+
+            <!-- Switch Camera Button -->
+            <div class="cam-switch-btn" id="switch-cam-btn" onclick="switchCamera()">
+                <svg viewBox="0 0 24 24">
+                    <path d="M20 4h-3.17L15 2H9L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-8 3c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l1.51 1.51C18.72 14.36 19 13.22 19 12c0-3.87-3.13-7-7-7-1.22 0-2.36.28-3.34.84l1.51 1.51C10.74 7.13 11.35 7 12 7zm-5.64.36L4.83 5.83C3.7 7.28 3 9.06 3 11c0 3.87 3.13 7 7 7 1.94 0 3.72-.7 5.17-1.83l-1.53-1.53C12.74 15.35 11.39 16 10 16c-2.76 0-5-2.24-5-5 0-1.39.65-2.74 1.36-3.64z"/>
+                </svg>
+            </div>
+
             <div class="cam-overlay-text">
                 <div class="bold-name" id="cam-user-name">RIYAZ AHMAD</div>
                 <div>UDISE : <span id="cam-udise">10101101402</span></div>
@@ -368,7 +148,7 @@
         </div>
 
         <div class="modal-btn-group">
-            <button class="btn-capture" id="snBtn" onclick="snap()">Capture/<br>फोटो लें</button>
+            <button class="btn-capture" id="snBtn" onclick="handleCaptureClick()">Capture/<br>फोटो लें</button>
             <button class="btn-submit" id="subBtn" onclick="submitAttendance()">Mark Attendance/<br>उपस्थिति दर्ज करें</button>
         </div>
     </div>
@@ -387,6 +167,9 @@
     let b64 = "", streamRef = null;
     let currentActionType = "";
     let userLat = 0, userLon = 0;
+    let isCamRunning = false;
+    let currentFacingMode = "user"; // 'user' (Front) or 'environment' (Back)
+    let teachersDataMap = {}; 
 
     function getDistance(lat1, lon1, lat2, lon2) {
         const R = 6371; 
@@ -396,6 +179,12 @@
         return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
     }
 
+    function getDirectDriveUrl(url) {
+        if (!url) return "";
+        let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
+        return (match && match[1]) ? "https://lh3.googleusercontent.com/d/" + match[1] : url;
+    }
+
     window.onload = () => {
         startClock();
         if (!navigator.geolocation) {
@@ -403,7 +192,7 @@
             return;
         }
 
-        navigator.geolocation.getCurrentPosition(pos => {
+        navigator.geolocation.watchPosition(pos => {
             userLat = pos.coords.latitude;
             userLon = pos.coords.longitude;
             const d = getDistance(userLat, userLon, SCHOOL_LAT, SCHOOL_LON);
@@ -412,19 +201,18 @@
             document.getElementById('distance-info').innerText = `You are ${distInMeters} m away from the school boundary`;
 
             if (d <= MAX_DIST) {
-                document.getElementById('loader').style.display = 'none';
-                document.getElementById('main-ui').style.display = 'block';
-                
-                const saved = localStorage.getItem('lastClass');
-                if(saved) { document.getElementById('classList').value = saved; loadStudents(); }
+                if(document.getElementById('loader').style.display !== 'none') {
+                    document.getElementById('loader').style.display = 'none';
+                    document.getElementById('main-ui').style.display = 'block';
+                    const saved = localStorage.getItem('lastClass');
+                    if(saved) { document.getElementById('classList').value = saved; loadStudents(); }
+                }
             } else {
                 document.getElementById('loader').innerHTML = `<h2 style='color:red;'>ACCESS DENIED</h2>
-                    <p>You are <b>${d.toFixed(2)} km</b> away from school. Attendance is not allowed if distance is more than <b>500 meters.</b></p>
-                    <button onclick="location.reload()" style="background:#222; padding:10px; color:#fff; border:none; border-radius:5px; cursor:pointer;">Retry</button>`;
+                    <p>You are <b>${d.toFixed(2)} km</b> away from school. Allowed radius: <b>500m</b>.</p>
+                    <button onclick="location.reload()" style="background:#222; padding:10px; color:#fff; border:none; border-radius:5px;">Retry</button>`;
             }
-        }, (err) => {
-            document.getElementById('loader').innerHTML = "<h2>Permission Denied</h2><p>GPS/Location on karein aur permission allow karein.</p><button onclick='location.reload()'>Try Again</button>";
-        }, { enableHighAccuracy: true });
+        }, () => {}, { enableHighAccuracy: true });
     };
 
     function startClock() {
@@ -432,134 +220,9 @@
             const now = new Date();
             const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
             document.getElementById('top-date').innerText = dateStr;
-            
             const timeFormatted = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
             document.getElementById('cam-time').innerText = `${timeFormatted} (${dateStr})`;
         }, 1000);
-    }
-
-    // Step 1: Explicit Permission Prompt Trigger
-    function requestPermissionAndOpen(type) {
-        const cid = document.getElementById('classList').value;
-        const name = document.getElementById('sList').value;
-
-        if(!cid || !name) {
-            Swal.fire({ icon: 'warning', title: 'Please Select', text: 'Select Category and Name First!', confirmButtonColor: '#2e7d32' });
-            return;
-        }
-
-        currentActionType = type;
-
-        Swal.fire({
-            title: 'Camera Permission Required',
-            text: 'Kripya camera start karne ke liye Allow/OK button par click karein.',
-            icon: 'info',
-            showCancelButton: true,
-            confirmButtonColor: '#007aff',
-            confirmButtonText: 'OK / Open Camera',
-            cancelButtonText: 'Cancel'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                openCameraModal();
-            }
-        });
-    }
-
-    // Step 2: Open Modal and initialize camera hardware stream
-    async function openCameraModal() {
-        document.getElementById('cam-lat').innerText = userLat.toFixed(7);
-        document.getElementById('cam-lon').innerText = userLon.toFixed(7);
-        document.getElementById('camModal').style.display = 'flex';
-        resetCamUI();
-
-        await initCameraStream();
-    }
-
-    async function initCameraStream() {
-        stopCam();
-        const video = document.getElementById('v');
-
-        const configs = [
-            { video: { facingMode: { exact: "user" } }, audio: false },
-            { video: { facingMode: "user" }, audio: false },
-            { video: true, audio: false }
-        ];
-
-        let streamObj = null;
-
-        for (let config of configs) {
-            try {
-                streamObj = await navigator.mediaDevices.getUserMedia(config);
-                if (streamObj) break;
-            } catch (err) {
-                console.warn("Retrying constraint:", config);
-            }
-        }
-
-        if (streamObj) {
-            streamRef = streamObj;
-            video.srcObject = streamRef;
-            video.onloadedmetadata = () => {
-                video.play();
-            };
-        } else {
-            // Fallback for strict Android browsers blocking inline video streams
-            closeCameraModal();
-            document.getElementById('file-input').click();
-        }
-    }
-
-    function handleNativeCapture(event) {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                b64 = e.target.result;
-                document.getElementById('p').src = b64;
-                document.getElementById('p').style.display = "block";
-                document.getElementById('v').style.display = "none";
-                document.getElementById('camModal').style.display = 'flex';
-                document.getElementById('snBtn').innerHTML = "Retake/<br>पुनः फोटो लें";
-                document.getElementById('subBtn').classList.add('active');
-            };
-            reader.readAsDataURL(file);
-        }
-    }
-
-    function closeCameraModal() {
-        document.getElementById('camModal').style.display = 'none';
-        stopCam();
-    }
-
-    function stopCam() {
-        if (streamRef) {
-            streamRef.getTracks().forEach(track => track.stop());
-            streamRef = null;
-        }
-    }
-
-    function snap() {
-        const video = document.getElementById('v');
-        const cn = document.getElementById('c');
-        
-        if (video.style.display !== "none" && video.videoWidth > 0) {
-            cn.width = video.videoWidth; 
-            cn.height = video.videoHeight;
-            cn.getContext('2d').drawImage(video, 0, 0, cn.width, cn.height);
-            b64 = cn.toDataURL('image/jpeg', 0.6); 
-            document.getElementById('p').src = b64; 
-            document.getElementById('p').style.display = "block"; 
-            video.style.display = "none";
-            stopCam();
-        } else {
-            // Retake Trigger
-            resetCamUI();
-            initCameraStream();
-            return;
-        }
-
-        document.getElementById('snBtn').innerHTML = "Retake/<br>पुनः फोटो लें";
-        document.getElementById('subBtn').classList.add('active');
     }
 
     function saveClassAndLoad() {
@@ -573,26 +236,169 @@
         let sl = document.getElementById('sList');
         if(!cid) return;
         sl.innerHTML = "<option>Loading...</option>";
-        fetch(SCRIPT_URL + "?classId=" + cid).then(r => r.json()).then(data => {
+        
+        fetch(SCRIPT_URL + "?classId=" + cid)
+        .then(r => r.json())
+        .then(data => {
             sl.innerHTML = "<option value=''>-- SELECT NAME --</option>";
-            data.forEach(n => sl.innerHTML += `<option value="${n}">${n}</option>`);
+            teachersDataMap = {};
+            
+            data.forEach(item => {
+                let tName = item.name || (Array.isArray(item) ? item[0] : item);
+                let tId = item.id || (Array.isArray(item) ? item[1] : "");
+                let tPhoto = item.photo || (Array.isArray(item) ? item[2] : "");
+
+                if (tName) {
+                    teachersDataMap[tName] = { name: tName, id: tId, photo: getDirectDriveUrl(tPhoto) };
+                    sl.innerHTML += `<option value="${tName}">${tName}</option>`;
+                }
+            });
+        }).catch(err => {
+            sl.innerHTML = "<option value=''>Error Loading Data</option>";
         });
     }
 
     function updateUserInfo() {
         const name = document.getElementById('sList').value;
-        if(name) {
-            document.getElementById('display-name').innerText = name;
-            document.getElementById('cam-user-name').innerText = name;
+        const btnIn = document.getElementById('btn-in-id');
+        const btnOut = document.getElementById('btn-out-id');
+        const photoImg = document.getElementById('user-photo-img');
+        const defaultSvg = document.getElementById('default-avatar-svg');
+
+        if(name && teachersDataMap[name]) {
+            const userObj = teachersDataMap[name];
+            document.getElementById('display-name').innerText = userObj.name;
+            document.getElementById('display-id').innerText = userObj.id || "N/A";
+            document.getElementById('cam-user-name').innerText = userObj.name;
+
+            if(userObj.photo) {
+                photoImg.src = userObj.photo;
+                photoImg.style.display = "block";
+                defaultSvg.style.display = "none";
+            } else {
+                photoImg.style.display = "none";
+                defaultSvg.style.display = "block";
+            }
+
+            const todayKey = new Date().toISOString().split('T')[0];
+            const userRecord = JSON.parse(localStorage.getItem(`att_${todayKey}_${name}`) || '{}');
+
+            document.getElementById('in-time-display').innerText = userRecord.inTime || "--:-- --";
+            document.getElementById('out-time-display').innerText = userRecord.outTime || "--:-- --";
+
+            btnIn.disabled = !!userRecord.inTime;
+            btnOut.disabled = !userRecord.inTime || !!userRecord.outTime;
+        } else {
+            document.getElementById('display-name').innerText = "SELECT TEACHER";
+            document.getElementById('display-id').innerText = "--";
+            photoImg.style.display = "none";
+            defaultSvg.style.display = "block";
+            document.getElementById('in-time-display').innerText = "--:-- --";
+            document.getElementById('out-time-display').innerText = "--:-- --";
+            btnIn.disabled = false;
+            btnOut.disabled = true;
         }
+    }
+
+    async function handleCaptureClick() {
+        if (!isCamRunning && !b64) await startCam();
+        else if (isCamRunning) snap();
+        else { resetCamUI(); await startCam(); }
+    }
+
+    async function startCam() {
+        stopCam();
+        try {
+            streamRef = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: currentFacingMode }, 
+                audio: false 
+            });
+            let v = document.getElementById('v');
+            v.srcObject = streamRef;
+            await v.play();
+            isCamRunning = true;
+        } catch (e) { 
+            document.getElementById('file-input').click();
+        }
+    }
+
+    async function switchCamera() {
+        currentFacingMode = (currentFacingMode === "user") ? "environment" : "user";
+        if (isCamRunning) {
+            await startCam();
+        }
+    }
+
+    function handleNativeCapture(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const img = new Image();
+            img.onload = function() {
+                compressAndSetPhoto(img);
+            };
+            img.src = URL.createObjectURL(file);
+        }
+    }
+
+    function stopCam() {
+        if (streamRef) {
+            streamRef.getTracks().forEach(track => track.stop());
+            streamRef = null;
+        }
+        isCamRunning = false;
+    }
+
+    async function openCameraModal(type) {
+        const cid = document.getElementById('classList').value;
+        const name = document.getElementById('sList').value;
+        if(!cid || !name) {
+            Swal.fire({ icon: 'warning', title: 'Please Select', text: 'Select Category and Name First!' });
+            return;
+        }
+        currentActionType = type;
+        document.getElementById('cam-lat').innerText = userLat.toFixed(7);
+        document.getElementById('cam-lon').innerText = userLon.toFixed(7);
+        document.getElementById('camModal').style.display = 'flex';
+        resetCamUI();
+        
+        // DIRECT CAMERA OPEN ON CLICK
+        await startCam();
+    }
+
+    function closeCameraModal() {
+        document.getElementById('camModal').style.display = 'none';
+        stopCam();
+    }
+
+    function snap() {
+        const video = document.getElementById('v');
+        compressAndSetPhoto(video);
+        stopCam();
+    }
+
+    function compressAndSetPhoto(sourceElement) {
+        const cn = document.getElementById('c');
+        const ctx = cn.getContext('2d');
+        
+        cn.width = 240; 
+        cn.height = 240;
+        ctx.drawImage(sourceElement, 0, 0, 240, 240);
+        
+        b64 = cn.toDataURL('image/jpeg', 0.3); 
+        
+        document.getElementById('p').src = b64; 
+        document.getElementById('p').style.display = "block"; 
+        document.getElementById('v').style.display = "none";
+        document.getElementById('snBtn').innerHTML = "Capture/<br>फोटो लें";
+        document.getElementById('subBtn').classList.add('active');
+        document.getElementById('switch-cam-btn').style.display = 'none';
     }
 
     function submitAttendance() {
         if(!b64) {
-            Swal.fire({ icon: 'warning', title: 'Photo Required', text: 'Take Photo First!', confirmButtonColor: '#2e7d32' });
+            Swal.fire({ icon: 'warning', title: 'Photo Required', text: 'Take Photo First!' });
             return;
         }
-
         closeCameraModal();
         send(currentActionType);
     }
@@ -600,35 +406,42 @@
     function send(t) {
         const cid = document.getElementById('classList').value;
         const name = document.getElementById('sList').value;
+        const teacherId = document.getElementById('display-id').innerText;
 
         Swal.fire({ title: 'Submitting...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
 
-        navigator.geolocation.getCurrentPosition(pos => {
-            const payload = { classId: cid, name: name, type: t, location: pos.coords.latitude + "," + pos.coords.longitude, photo: b64 };
+        const payload = { 
+            classId: cid, 
+            name: name, 
+            teacherId: teacherId, 
+            type: t, 
+            location: userLat + "," + userLon, 
+            photo: b64 
+        };
 
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                body: JSON.stringify(payload)
-            })
-            .then(res => res.json())
-            .then(data => {
-                const nowTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-                if(t === 'check-in') {
-                    document.getElementById('in-time-display').innerText = nowTime;
-                } else {
-                    document.getElementById('out-time-display').innerText = nowTime;
-                }
+        fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(data => {
+            const nowTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+            const todayKey = new Date().toISOString().split('T')[0];
+            const attKey = `att_${todayKey}_${name}`;
+            let userRecord = JSON.parse(localStorage.getItem(attKey) || '{}');
 
-                Swal.fire({ icon: 'success', title: 'Done', text: `Attendance for ${name} recorded!`, timer: 2000 });
-                resetUI();
-            })
-            .catch(err => {
-                Swal.fire({ icon: 'error', title: 'Error', text: 'Something went wrong!' });
-            });
+            if(t === 'check-in') userRecord.inTime = nowTime;
+            else userRecord.outTime = nowTime;
 
-        }, (err) => {
-            Swal.fire({ icon: 'error', title: 'GPS Error', text: 'Location access denied!' });
-        }, { enableHighAccuracy: true });
+            localStorage.setItem(attKey, JSON.stringify(userRecord));
+            updateUserInfo();
+
+            Swal.fire({ icon: 'success', title: 'Done', text: `Attendance recorded!`, timer: 1200 });
+            resetCamUI();
+        })
+        .catch(err => {
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Something went wrong!' });
+        });
     }
 
     function resetCamUI() {
@@ -637,11 +450,7 @@
         document.getElementById('v').style.display = "block";
         document.getElementById('snBtn').innerHTML = "Capture/<br>फोटो लें";
         document.getElementById('subBtn').classList.remove('active');
-    }
-
-    function resetUI() {
-        resetCamUI();
-        document.getElementById('sList').value = "";
+        document.getElementById('switch-cam-btn').style.display = 'flex';
     }
 </script>
 </body>
