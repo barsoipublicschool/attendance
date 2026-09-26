@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>e-Shikshakosh Attendance UI</title>
+    
+    <!-- SweetAlert2 CSS & JS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f7f4f8;
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .top-bar {
+            width: 100%;
+            max-width: 380px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            font-size: 16px;
+            color: #000;
+            margin-bottom: 15px;
+            padding: 5px 0;
+        }
+
+        .card {
+            background: #ffffff;
+            width: 100%;
+            max-width: 380px;
+            border-radius: 16px;
+            padding: 20px 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            position: relative;
+        }
+
+        #main-ui { display: none; }
+        #loader { padding: 30px 10px; }
+
+        .profile-avatar {
+            width: 75px;
+            height: 75px;
+            background-color: #d1c4e9;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: -45px auto 10px auto;
+            border: 3px solid #ffffff;
+        }
+
+        .profile-avatar svg {
+            width: 45px;
+            height: 45px;
+            fill: #1f1f1f;
+        }
+
+        .user-name {
+            font-size: 17px;
+            font-weight: 800;
+            color: #000;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+
+        .info-text {
+            color: #8e8e93;
+            font-size: 13px;
+            margin: 3px 0;
+            font-weight: 500;
+        }
+
+        .info-text span {
+            color: #000;
+            font-weight: 600;
+        }
+
+        .school-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #2c2c2e;
+            margin: 12px 0 15px 0;
+            text-transform: uppercase;
+        }
+
+        .select-box {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #d1d1d6;
+            background: #fff;
+            margin-bottom: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #3a3a3c;
+            outline: none;
+        }
+
+        .distance-alert {
+            background-color: #fde8e8;
+            border: 1px solid #f8b4b4;
+            color: #d9534f;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 13px;
+            line-height: 1.4;
+            margin: 10px 0 15px 0;
+            font-weight: 500;
+        }
+
+        .time-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 15px 0;
+            padding: 0 5px;
+        }
+
+        .time-box {
+            flex: 1;
+            text-align: center;
+        }
+
+        .time-label {
+            color: #8e8e93;
+            font-size: 12px;
+            line-height: 1.3;
+        }
+
+        .time-value {
+            font-size: 16px;
+            font-weight: 700;
+            margin-top: 4px;
+        }
+
+        .time-value.green { color: #34c759; }
+        .time-value.red { color: #ff3b30; }
+
+        .divider {
+            width: 1px;
+            height: 35px;
+            background-color: #e5e5ea;
+            margin: 0 10px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .btn-action {
+            flex: 1;
+            padding: 12px 8px;
+            border-radius: 10px;
+            border: none;
+            font-size: 13px;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            line-height: 1.3;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .btn-in { background-color: #a3d9a5; color: #1b5e20; }
+        .btn-out { background-color: #d32f2f; color: #ffffff; }
+
+        /* Disabled Button Style */
+        .btn-action:disabled {
+            background-color: #e5e5ea !important;
+            color: #a1a1a1 !important;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .camera-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 360px;
+            padding: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            text-align: center;
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 22px;
+            font-weight: bold;
+            color: #8e8e93;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .cam-box {
+            width: 100%;
+            border-radius: 16px;
+            overflow: hidden;
+            aspect-ratio: 4/5;
+            background: #000;
+            position: relative;
+        }
+
+        video, img.snap-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .cam-overlay-text {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            color: white;
+            text-align: left;
+            font-size: 11px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+            line-height: 1.4;
+            font-weight: 500;
+            pointer-events: none;
+        }
+
+        .cam-overlay-text .bold-name {
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .modal-btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-capture {
+            flex: 1;
+            background-color: #34c759;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .btn-submit {
+            flex: 1;
+            background-color: #e5e5ea;
+            color: #8e8e93;
+            border: none;
+            padding: 10px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .btn-submit.active {
+            background-color: #007aff;
+            color: white;
+        }
+
+        .footer {
+            font-size: 11px;
+            color: #8e8e93;
+            margin-top: 15px;
+        }
+
+        #file-input { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="top-bar">
+    <span>📅</span> <span id="top-date">-- --- ----</span>
+</div>
+
+<div class="card">
+    <div id="loader">
+        <h3>Verifying Location... 📍</h3>
+        <p>Please wait, checking school range.</p>
+    </div>
+
+    <div id="main-ui">
+        <div class="profile-avatar">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        </div>
+
+        <select id="classList" class="select-box" onchange="saveClassAndLoad()">
+            <option value="">-- SELECT CATEGORY --</option>
+            <option value="1">Teachers</option>
+            <option value="2">Non-Teaching Staffs</option>
+        </select>
+
+        <select id="sList" class="select-box" onchange="updateUserInfo()">
+            <option value="">-- SELECT NAME --</option>
+        </select>
+
+        <div class="user-name" id="display-name">.......</div>
+        <div class="info-text">Teacher ID :<span id="display-id">.......</span></div>
+        <div class="info-text">UDISE :<span id="display-udise">10101109902</span></div>
+        <div class="school-title">BARSOI PUBLIC SCHOOL</div>
+
+        <div class="distance-alert" id="distance-info">
+            Calculating distance...
+        </div>
+
+        <div class="time-container">
+            <div class="time-box">
+                <div class="time-label">School In Time/<br>कार्यविधि प्रारम्भ :</div>
+                <div class="time-value green" id="in-time-display">--:-- --</div>
+            </div>
+            <div class="divider"></div>
+            <div class="time-box">
+                <div class="time-label">School Out time/<br>कार्यविधि समाप्ति :</div>
+                <div class="time-value red" id="out-time-display">--</div>
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-action btn-in" id="btn-in-action" onclick="requestPermissionAndOpen('check-in')">Mark In/<br>हाजिरी दर्ज करें</button>
+            <button class="btn-action btn-out" id="btn-out-action" onclick="requestPermissionAndOpen('check-out')">Mark Out/<br>कार्यविधि समाप्ति दर्ज करें</button>
+        </div>
+
+        <div class="footer">
+            <b>Created by Riyaz Ahmad, PGT Zoology</b>
+        </div>
+    </div>
+</div>
+
+<!-- Camera Modal View Popup -->
+<div class="camera-modal" id="camModal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeCameraModal()">&times;</span>
+        <div class="cam-box">
+            <video id="v" autoplay playsinline muted></video>
+            <img id="p" class="snap-img" style="display:none;">
+            
+            <div class="cam-overlay-text">
+                <div class="bold-name" id="cam-user-name">RIYAZ AHMAD</div>
+                <div>UDISE : <span id="cam-udise">10101101402</span></div>
+                <div>Latitude : <span id="cam-lat">0.0000000</span></div>
+                <div>Longitude : <span id="cam-lon">0.0000000</span></div>
+                <div>Time : <span id="cam-time">--:-- AM</span></div>
+            </div>
+        </div>
+
+        <div class="modal-btn-group">
+            <button class="btn-capture" id="snBtn" onclick="snap()">Capture/<br>फोटो लें</button>
+            <button class="btn-submit" id="subBtn" onclick="submitAttendance()">Mark Attendance/<br>उपस्थिति दर्ज करें</button>
+        </div>
+    </div>
+</div>
+
+<input type="file" id="file-input" accept="image/*" capture="user" onchange="handleNativeCapture(event)">
+<canvas id="c" style="display:none;"></canvas>
+
+<script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyzrc76WSQb88-ZRsZ1aQq5NznavtMkBWAp-OTLNgrgUDzsHlrk6fdpefvlrzNoeAxB/exec"; 
+    
+    const SCHOOL_LAT = 25.624363; 
+    const SCHOOL_LON = 87.929680; 
+    const MAX_DIST = 0.5; 
+
+    let b64 = "", streamRef = null;
+    let currentActionType = "";
+    let userLat = 0, userLon = 0;
+
+    function getDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371; 
+        const dLat = (lat2-lat1) * Math.PI/180;
+        const dLon = (lon2-lon1) * Math.PI/180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+        return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+    }
+
+    function getTodayKey() {
+        const d = new Date();
+        return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+    }
+
+    window.onload = () => {
+        startClock();
+        if (!navigator.geolocation) {
+            document.getElementById('loader').innerHTML = "<h2>Error</h2><p>GPS not supported.</p>";
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(pos => {
+            userLat = pos.coords.latitude;
+            userLon = pos.coords.longitude;
+            const d = getDistance(userLat, userLon, SCHOOL_LAT, SCHOOL_LON);
+            const distInMeters = (d * 1000).toFixed(2);
+            
+            document.getElementById('distance-info').innerText = `You are ${distInMeters} m away from the school boundary`;
+
+            if (d <= MAX_DIST) {
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('main-ui').style.display = 'block';
+                
+                const saved = localStorage.getItem('lastClass');
+                if(saved) { document.getElementById('classList').value = saved; loadStudents(); }
+            } else {
+                document.getElementById('loader').innerHTML = `<h2 style='color:red;'>ACCESS DENIED</h2>
+                    <p>You are <b>${d.toFixed(2)} km</b> away from school. Attendance is not allowed if distance is more than <b>500 meters.</b></p>
+                    <button onclick="location.reload()" style="background:#222; padding:10px; color:#fff; border:none; border-radius:5px; cursor:pointer;">Retry</button>`;
+            }
+        }, (err) => {
+            document.getElementById('loader').innerHTML = "<h2>Permission Denied</h2><p>GPS/Location on karein aur permission allow karein.</p><button onclick='location.reload()'>Try Again</button>";
+        }, { enableHighAccuracy: true });
+    };
+
+    function startClock() {
+        setInterval(() => {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+            document.getElementById('top-date').innerText = dateStr;
+            
+            const timeFormatted = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+            document.getElementById('cam-time').innerText = `${timeFormatted} (${dateStr})`;
+        }, 1000);
+    }
+
+    function updateUserInfo() {
+        const name = document.getElementById('sList').value;
+        if(name) {
+            document.getElementById('display-name').innerText = name;
+            document.getElementById('cam-user-name').innerText = name;
+            checkLockStatus(name);
+        } else {
+            resetLockStatusUI();
+        }
+    }
+
+    // Lock and Attendance status check
+    function checkLockStatus(teacherName) {
+        const todayKey = getTodayKey();
+        const inKey = `att_in_${todayKey}_${teacherName}`;
+        const outKey = `att_out_${todayKey}_${teacherName}`;
+
+        const inTime = localStorage.getItem(inKey);
+        const outTime = localStorage.getItem(outKey);
+
+        const btnIn = document.getElementById('btn-in-action');
+        const btnOut = document.getElementById('btn-out-action');
+
+        if (inTime) {
+            document.getElementById('in-time-display').innerText = inTime;
+            btnIn.disabled = true;
+            btnIn.innerHTML = "Marked In/<br>हाजिरी दर्ज हो चुकी है";
+        } else {
+            document.getElementById('in-time-display').innerText = "--:-- --";
+            btnIn.disabled = false;
+            btnIn.innerHTML = "Mark In/<br>हाजिरी दर्ज करें";
+        }
+
+        if (outTime) {
+            document.getElementById('out-time-display').innerText = outTime;
+            btnOut.disabled = true;
+            btnOut.innerHTML = "Marked Out/<br>कार्यविधि समाप्त";
+        } else {
+            document.getElementById('out-time-display').innerText = "--";
+            btnOut.disabled = false;
+            btnOut.innerHTML = "Mark Out/<br>कार्यविधि समाप्ति दर्ज करें";
+        }
+    }
+
+    function resetLockStatusUI() {
+        document.getElementById('in-time-display').innerText = "--:-- --";
+        document.getElementById('out-time-display').innerText = "--";
+        const btnIn = document.getElementById('btn-in-action');
+        const btnOut = document.getElementById('btn-out-action');
+        btnIn.disabled = false;
+        btnOut.disabled = false;
+        btnIn.innerHTML = "Mark In/<br>हाजिरी दर्ज करें";
+        btnOut.innerHTML = "Mark Out/<br>कार्यविधि समाप्ति दर्ज करें";
+    }
+
+    function requestPermissionAndOpen(type) {
+        const cid = document.getElementById('classList').value;
+        const name = document.getElementById('sList').value;
+
+        if(!cid || !name) {
+            Swal.fire({ icon: 'warning', title: 'Please Select', text: 'Select Category and Name First!', confirmButtonColor: '#2e7d32' });
+            return;
+        }
+
+        currentActionType = type;
+
+        Swal.fire({
+            title: 'Camera Permission Required',
+            text: 'Kripya camera start karne ke liye Allow/OK button par click karein.',
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonColor: '#007aff',
+            confirmButtonText: 'OK / Open Camera',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                openCameraModal();
+            }
+        });
+    }
+
+    async function openCameraModal() {
+        document.getElementById('cam-lat').innerText = userLat.toFixed(7);
+        document.getElementById('cam-lon').innerText = userLon.toFixed(7);
+        document.getElementById('camModal').style.display = 'flex';
+        resetCamUI();
+
+        await initCameraStream();
+    }
+
+    async function initCameraStream() {
+        stopCam();
+        const video = document.getElementById('v');
+
+        const configs = [
+            { video: { facingMode: { exact: "user" } }, audio: false },
+            { video: { facingMode: "user" }, audio: false },
+            { video: true, audio: false }
+        ];
+
+        let streamObj = null;
+
+        for (let config of configs) {
+            try {
+                streamObj = await navigator.mediaDevices.getUserMedia(config);
+                if (streamObj) break;
+            } catch (err) {
+                console.warn("Retrying constraint:", config);
+            }
+        }
+
+        if (streamObj) {
+            streamRef = streamObj;
+            video.srcObject = streamRef;
+            video.onloadedmetadata = () => { video.play(); };
+        } else {
+            closeCameraModal();
+            document.getElementById('file-input').click();
+        }
+    }
+
+    function handleNativeCapture(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                b64 = e.target.result;
+                document.getElementById('p').src = b64;
+                document.getElementById('p').style.display = "block";
+                document.getElementById('v').style.display = "none";
+                document.getElementById('camModal').style.display = 'flex';
+                document.getElementById('snBtn').innerHTML = "Retake/<br>पुनः फोटो लें";
+                document.getElementById('subBtn').classList.add('active');
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function closeCameraModal() {
+        document.getElementById('camModal').style.display = 'none';
+        stopCam();
+    }
+
+    function stopCam() {
+        if (streamRef) {
+            streamRef.getTracks().forEach(track => track.stop());
+            streamRef = null;
+        }
+    }
+
+    function snap() {
+        const video = document.getElementById('v');
+        const cn = document.getElementById('c');
+        
+        if (video.style.display !== "none" && video.videoWidth > 0) {
+            cn.width = video.videoWidth; 
+            cn.height = video.videoHeight;
+            cn.getContext('2d').drawImage(video, 0, 0, cn.width, cn.height);
+            b64 = cn.toDataURL('image/jpeg', 0.6); 
+            document.getElementById('p').src = b64; 
+            document.getElementById('p').style.display = "block"; 
+            video.style.display = "none";
+            stopCam();
+        } else {
+            resetCamUI();
+            initCameraStream();
+            return;
+        }
+
+        document.getElementById('snBtn').innerHTML = "Retake/<br>पुनः फोटो लें";
+        document.getElementById('subBtn').classList.add('active');
+    }
+
+    function saveClassAndLoad() {
+        let cid = document.getElementById('classList').value;
+        localStorage.setItem('lastClass', cid);
+        loadStudents();
+    }
+
+    function loadStudents() {
+        let cid = document.getElementById('classList').value;
+        let sl = document.getElementById('sList');
+        if(!cid) return;
+        sl.innerHTML = "<option>Loading...</option>";
+        fetch(SCRIPT_URL + "?classId=" + cid).then(r => r.json()).then(data => {
+            sl.innerHTML = "<option value=''>-- SELECT NAME --</option>";
+            data.forEach(n => sl.innerHTML += `<option value="${n}">${n}</option>`);
+        });
+    }
+
+    function submitAttendance() {
+        if(!b64) {
+            Swal.fire({ icon: 'warning', title: 'Photo Required', text: 'Take Photo First!', confirmButtonColor: '#2e7d32' });
+            return;
+        }
+
+        closeCameraModal();
+        send(currentActionType);
+    }
+
+    function send(t) {
+        const cid = document.getElementById('classList').value;
+        const name = document.getElementById('sList').value;
+
+        Swal.fire({ title: 'Submitting...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+
+        navigator.geolocation.getCurrentPosition(pos => {
+            const payload = { classId: cid, name: name, type: t, location: pos.coords.latitude + "," + pos.coords.longitude, photo: b64 };
+
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                const nowTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+                const todayKey = getTodayKey();
+
+                if(t === 'check-in') {
+                    localStorage.setItem(`att_in_${todayKey}_${name}`, nowTime);
+                } else {
+                    localStorage.setItem(`att_out_${todayKey}_${name}`, nowTime);
+                }
+
+                checkLockStatus(name);
+
+                Swal.fire({ icon: 'success', title: 'Done', text: `Attendance for ${name} recorded!`, timer: 2000 });
+                resetCamUI();
+            })
+            .catch(err => {
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Something went wrong!' });
+            });
+
+        }, (err) => {
+            Swal.fire({ icon: 'error', title: 'GPS Error', text: 'Location access denied!' });
+        }, { enableHighAccuracy: true });
+    }
+
+    function resetCamUI() {
+        b64 = "";
+        document.getElementById('p').style.display = "none";
+        document.getElementById('v').style.display = "block";
+        document.getElementById('snBtn').innerHTML = "Capture/<br>फोटो लें";
+        document.getElementById('subBtn').classList.remove('active');
+    }
+</script>
+</body>
+</html>
