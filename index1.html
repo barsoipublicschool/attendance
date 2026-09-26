@@ -25,7 +25,6 @@
             min-height: 100vh;
         }
 
-        /* Top Header Date Bar */
         .top-bar {
             width: 100%;
             max-width: 380px;
@@ -53,7 +52,6 @@
         #main-ui { display: none; }
         #loader { padding: 30px 10px; }
 
-        /* User Profile Icon */
         .profile-avatar {
             width: 75px;
             height: 75px;
@@ -72,7 +70,6 @@
             fill: #1f1f1f;
         }
 
-        /* Profile Details */
         .user-name {
             font-size: 17px;
             font-weight: 800;
@@ -102,7 +99,6 @@
             text-transform: uppercase;
         }
 
-        /* Select Dropdowns */
         .select-box {
             width: 100%;
             padding: 10px;
@@ -116,7 +112,6 @@
             outline: none;
         }
 
-        /* Distance Banner Alert */
         .distance-alert {
             background-color: #fde8e8;
             border: 1px solid #f8b4b4;
@@ -129,7 +124,6 @@
             font-weight: 500;
         }
 
-        /* Time & Status Grid */
         .time-container {
             display: flex;
             justify-content: space-between;
@@ -165,7 +159,6 @@
             margin: 0 10px;
         }
 
-        /* Action Buttons */
         .btn-group {
             display: flex;
             gap: 12px;
@@ -188,7 +181,6 @@
         .btn-in { background-color: #a3d9a5; color: #1b5e20; }
         .btn-out { background-color: #d32f2f; color: #ffffff; }
 
-        /* Camera Modal Overlay */
         .camera-modal {
             display: none;
             position: fixed;
@@ -215,7 +207,7 @@
             position: absolute;
             top: 10px;
             right: 15px;
-            font-size: 20px;
+            font-size: 22px;
             font-weight: bold;
             color: #8e8e93;
             cursor: pointer;
@@ -385,7 +377,7 @@
 <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyzrc76WSQb88-ZRsZ1aQq5NznavtMkBWAp-OTLNgrgUDzsHlrk6fdpefvlrzNoeAxB/exec"; 
     
-    // --- SCHOOL COORDINATES ---
+    // --- UPDATED SCHOOL COORDINATES ---
     const SCHOOL_LAT = 25.624363; 
     const SCHOOL_LON = 87.929680; 
     const MAX_DIST = 0.5; 
@@ -448,35 +440,33 @@
         stopCam();
         const video = document.getElementById('v');
         
-        // Mobile browsers compatibility configuration
-        const constraints = {
-            video: {
-                facingMode: { ideal: "user" },
-                width: { ideal: 640 },
-                height: { ideal: 480 }
-            },
-            audio: false
-        };
+        // Mobile-friendly simplified constraints to prevent hardware rejection
+        const options = [
+            { video: { facingMode: "user" }, audio: false },
+            { video: { facingMode: "environment" }, audio: false },
+            { video: true, audio: false }
+        ];
 
-        try {
-            streamRef = await navigator.mediaDevices.getUserMedia(constraints);
-            video.srcObject = streamRef;
-            await video.play();
-        } catch (e) { 
-            console.error("Camera Error: ", e);
-            // Fallback constraint agar specific ideal mode fail ho jaye
+        let success = false;
+        for (let opt of options) {
             try {
-                streamRef = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                streamRef = await navigator.mediaDevices.getUserMedia(opt);
                 video.srcObject = streamRef;
                 await video.play();
-            } catch(fallbackErr) {
-                Swal.fire({ 
-                    icon: 'error', 
-                    title: 'Camera Error', 
-                    text: 'Camera access nahi mil raha hai. Kripya browser me Camera permission allow karein.' 
-                });
-                closeCameraModal();
+                success = true;
+                break;
+            } catch (err) {
+                console.warn("Retrying camera mode...", err);
             }
+        }
+
+        if (!success) {
+            Swal.fire({ 
+                icon: 'error', 
+                title: 'Camera Access Denied', 
+                text: 'Kripya browser settings me jaakar Camera permission enable karein aur page reload karein.' 
+            });
+            closeCameraModal();
         }
     }
 
@@ -527,7 +517,11 @@
         
         document.getElementById('camModal').style.display = 'flex';
         resetCamUI();
-        startCam();
+
+        // Small timeout ensures UI overlay is visible before requesting camera hardware
+        setTimeout(() => {
+            startCam();
+        }, 200);
     }
 
     function closeCameraModal() {
