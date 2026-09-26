@@ -176,17 +176,18 @@
             cursor: pointer;
             line-height: 1.3;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
         }
 
-        .btn-in { background-color: #a3d9a5; color: #1b5e20; }
+        .btn-in { background-color: #34c759; color: #ffffff; }
         .btn-out { background-color: #d32f2f; color: #ffffff; }
 
-        /* Lock / Disabled State Style */
         .btn-action:disabled {
             background-color: #e5e5ea !important;
-            color: #a1a1a1 !important;
+            color: #8e8e93 !important;
             cursor: not-allowed;
             box-shadow: none;
+            opacity: 0.7;
         }
 
         .camera-modal {
@@ -229,6 +230,9 @@
             aspect-ratio: 4/5;
             background: #000;
             position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         video, img.snap-img {
@@ -343,13 +347,13 @@
             <div class="divider"></div>
             <div class="time-box">
                 <div class="time-label">School Out time/<br>कार्यविधि समाप्ति :</div>
-                <div class="time-value red" id="out-time-display">--</div>
+                <div class="time-value red" id="out-time-display">--:-- --</div>
             </div>
         </div>
 
         <div class="btn-group">
-            <button class="btn-action btn-in" id="btn-in-action" onclick="requestPermissionAndOpen('check-in')">Mark In/<br>हाजिरी दर्ज करें</button>
-            <button class="btn-action btn-out" id="btn-out-action" onclick="requestPermissionAndOpen('check-out')">Mark Out/<br>कार्यविधि समाप्ति दर्ज करें</button>
+            <button id="btn-in-id" class="btn-action btn-in" onclick="openCameraModal('check-in')">Mark In/<br>हाजिरी दर्ज करें</button>
+            <button id="btn-out-id" class="btn-action btn-out" onclick="openCameraModal('check-out')" disabled>Mark Out/<br>कार्यविधि समाप्ति दर्ज करें</button>
         </div>
 
         <div class="footer">
@@ -376,18 +380,21 @@
         </div>
 
         <div class="modal-btn-group">
-            <button class="btn-capture" id="snBtn" onclick="snap()">Capture/<br>फोटो लें</button>
+            <button class="btn-capture" id="snBtn" onclick="handleCaptureClick()">Capture/<br>फोटो लें</button>
             <button class="btn-submit" id="subBtn" onclick="submitAttendance()">Mark Attendance/<br>उपस्थिति दर्ज करें</button>
         </div>
     </div>
 </div>
 
+<!-- Native Camera Input Fallback -->
 <input type="file" id="file-input" accept="image/*" capture="user" onchange="handleNativeCapture(event)">
+
 <canvas id="c" style="display:none;"></canvas>
 
 <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyzrc76WSQb88-ZRsZ1aQq5NznavtMkBWAp-OTLNgrgUDzsHlrk6fdpefvlrzNoeAxB/exec"; 
     
+    // --- SCHOOL COORDINATES ---
     const SCHOOL_LAT = 25.624363; 
     const SCHOOL_LON = 87.929680; 
     const MAX_DIST = 0.5; 
@@ -395,6 +402,7 @@
     let b64 = "", streamRef = null;
     let currentActionType = "";
     let userLat = 0, userLon = 0;
+    let isCamRunning = false;
 
     function getDistance(lat1, lon1, lat2, lon2) {
         const R = 6371; 
@@ -402,11 +410,6 @@
         const dLon = (lon2-lon1) * Math.PI/180;
         const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLon/2) * Math.sin(dLon/2);
         return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
-    }
-
-    function getTodayKey() {
-        const d = new Date();
-        return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
     }
 
     window.onload = () => {
@@ -451,181 +454,6 @@
         }, 1000);
     }
 
-    function updateUserInfo() {
-        const name = document.getElementById('sList').value;
-        if(name) {
-            document.getElementById('display-name').innerText = name;
-            document.getElementById('cam-user-name').innerText = name;
-            checkLockStatus(name);
-        } else {
-            resetLockStatusUI();
-        }
-    }
-
-    // Check & Apply Lock Status
-    function checkLockStatus(teacherName) {
-        const todayKey = getTodayKey();
-        const inKey = `att_in_${todayKey}_${teacherName}`;
-        const outKey = `att_out_${todayKey}_${teacherName}`;
-
-        const inTime = localStorage.getItem(inKey);
-        const outTime = localStorage.getItem(outKey);
-
-        const btnIn = document.getElementById('btn-in-action');
-        const btnOut = document.getElementById('btn-out-action');
-
-        if (inTime) {
-            document.getElementById('in-time-display').innerText = inTime;
-            btnIn.disabled = true;
-            btnIn.innerHTML = "Marked In/<br>हाजिरी दर्ज हो चुकी है";
-        } else {
-            document.getElementById('in-time-display').innerText = "--:-- --";
-            btnIn.disabled = false;
-            btnIn.innerHTML = "Mark In/<br>हाजिरी दर्ज करें";
-        }
-
-        if (outTime) {
-            document.getElementById('out-time-display').innerText = outTime;
-            btnOut.disabled = true;
-            btnOut.innerHTML = "Marked Out/<br>कार्यविधि समाप्त";
-        } else {
-            document.getElementById('out-time-display').innerText = "--";
-            btnOut.disabled = false;
-            btnOut.innerHTML = "Mark Out/<br>कार्यविधि समाप्ति दर्ज करें";
-        }
-    }
-
-    function resetLockStatusUI() {
-        document.getElementById('in-time-display').innerText = "--:-- --";
-        document.getElementById('out-time-display').innerText = "--";
-        const btnIn = document.getElementById('btn-in-action');
-        const btnOut = document.getElementById('btn-out-action');
-        btnIn.disabled = false;
-        btnOut.disabled = false;
-        btnIn.innerHTML = "Mark In/<br>हाजिरी दर्ज करें";
-        btnOut.innerHTML = "Mark Out/<br>कार्यविधि समाप्ति दर्ज करें";
-    }
-
-    function requestPermissionAndOpen(type) {
-        const cid = document.getElementById('classList').value;
-        const name = document.getElementById('sList').value;
-
-        if(!cid || !name) {
-            Swal.fire({ icon: 'warning', title: 'Please Select', text: 'Select Category and Name First!', confirmButtonColor: '#2e7d32' });
-            return;
-        }
-
-        currentActionType = type;
-
-        Swal.fire({
-            title: 'Camera Permission Required',
-            text: 'Kripya camera start karne ke liye Allow/OK button par click karein.',
-            icon: 'info',
-            showCancelButton: true,
-            confirmButtonColor: '#007aff',
-            confirmButtonText: 'OK / Open Camera',
-            cancelButtonText: 'Cancel'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                openCameraModal();
-            }
-        });
-    }
-
-    async function openCameraModal() {
-        document.getElementById('cam-lat').innerText = userLat.toFixed(7);
-        document.getElementById('cam-lon').innerText = userLon.toFixed(7);
-        document.getElementById('camModal').style.display = 'flex';
-        resetCamUI();
-
-        await initCameraStream();
-    }
-
-    async function initCameraStream() {
-        stopCam();
-        const video = document.getElementById('v');
-
-        const configs = [
-            { video: { facingMode: { exact: "user" } }, audio: false },
-            { video: { facingMode: "user" }, audio: false },
-            { video: true, audio: false }
-        ];
-
-        let streamObj = null;
-
-        for (let config of configs) {
-            try {
-                streamObj = await navigator.mediaDevices.getUserMedia(config);
-                if (streamObj) break;
-            } catch (err) {
-                console.warn("Retrying constraint:", config);
-            }
-        }
-
-        if (streamObj) {
-            streamRef = streamObj;
-            video.srcObject = streamRef;
-            video.onloadedmetadata = () => {
-                video.play();
-            };
-        } else {
-            closeCameraModal();
-            document.getElementById('file-input').click();
-        }
-    }
-
-    function handleNativeCapture(event) {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                b64 = e.target.result;
-                document.getElementById('p').src = b64;
-                document.getElementById('p').style.display = "block";
-                document.getElementById('v').style.display = "none";
-                document.getElementById('camModal').style.display = 'flex';
-                document.getElementById('snBtn').innerHTML = "Retake/<br>पुनः फोटो लें";
-                document.getElementById('subBtn').classList.add('active');
-            };
-            reader.readAsDataURL(file);
-        }
-    }
-
-    function closeCameraModal() {
-        document.getElementById('camModal').style.display = 'none';
-        stopCam();
-    }
-
-    function stopCam() {
-        if (streamRef) {
-            streamRef.getTracks().forEach(track => track.stop());
-            streamRef = null;
-        }
-    }
-
-    function snap() {
-        const video = document.getElementById('v');
-        const cn = document.getElementById('c');
-        
-        if (video.style.display !== "none" && video.videoWidth > 0) {
-            cn.width = video.videoWidth; 
-            cn.height = video.videoHeight;
-            cn.getContext('2d').drawImage(video, 0, 0, cn.width, cn.height);
-            b64 = cn.toDataURL('image/jpeg', 0.6); 
-            document.getElementById('p').src = b64; 
-            document.getElementById('p').style.display = "block"; 
-            video.style.display = "none";
-            stopCam();
-        } else {
-            resetCamUI();
-            initCameraStream();
-            return;
-        }
-
-        document.getElementById('snBtn').innerHTML = "Retake/<br>पुनः फोटो लें";
-        document.getElementById('subBtn').classList.add('active');
-    }
-
     function saveClassAndLoad() {
         let cid = document.getElementById('classList').value;
         localStorage.setItem('lastClass', cid);
@@ -641,6 +469,144 @@
             sl.innerHTML = "<option value=''>-- SELECT NAME --</option>";
             data.forEach(n => sl.innerHTML += `<option value="${n}">${n}</option>`);
         });
+    }
+
+    // Selected user attendance state tracker function
+    function updateUserInfo() {
+        const name = document.getElementById('sList').value;
+        const btnIn = document.getElementById('btn-in-id');
+        const btnOut = document.getElementById('btn-out-id');
+        const inDisplay = document.getElementById('in-time-display');
+        const outDisplay = document.getElementById('out-time-display');
+
+        if(name) {
+            document.getElementById('display-name').innerText = name;
+            document.getElementById('cam-user-name').innerText = name;
+
+            const todayKey = new Date().toISOString().split('T')[0];
+            const attKey = `att_${todayKey}_${name}`;
+            const userRecord = JSON.parse(localStorage.getItem(attKey) || '{}');
+
+            if (userRecord.inTime) {
+                inDisplay.innerText = userRecord.inTime;
+                btnIn.disabled = true; // Mark In locked
+
+                if (userRecord.outTime) {
+                    outDisplay.innerText = userRecord.outTime;
+                    btnOut.disabled = true; // Mark Out locked as well
+                } else {
+                    outDisplay.innerText = "--:-- --";
+                    btnOut.disabled = false; // Enable Mark Out
+                }
+            } else {
+                inDisplay.innerText = "--:-- --";
+                outDisplay.innerText = "--:-- --";
+                btnIn.disabled = false;
+                btnOut.disabled = true;
+            }
+        } else {
+            inDisplay.innerText = "--:-- --";
+            outDisplay.innerText = "--:-- --";
+            btnIn.disabled = false;
+            btnOut.disabled = true;
+        }
+    }
+
+    async function handleCaptureClick() {
+        if (!isCamRunning && !b64) {
+            await startCam();
+        } else if (isCamRunning) {
+            snap();
+        } else {
+            resetCamUI();
+            await startCam();
+        }
+    }
+
+    async function startCam() {
+        stopCam();
+        const video = document.getElementById('v');
+
+        try {
+            streamRef = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: "user" },
+                audio: false
+            });
+            video.srcObject = streamRef;
+            await video.play();
+            isCamRunning = true;
+        } catch (e) { 
+            console.warn("Direct camera streaming blocked by browser. Using native camera intent fallback.");
+            document.getElementById('file-input').click();
+        }
+    }
+
+    function handleNativeCapture(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                b64 = e.target.result;
+                document.getElementById('p').src = b64;
+                document.getElementById('p').style.display = "block";
+                document.getElementById('v').style.display = "none";
+                
+                document.getElementById('snBtn').innerHTML = "Retake/<br>पुनः फोटो लें";
+                document.getElementById('subBtn').classList.add('active');
+                isCamRunning = false;
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function stopCam() {
+        if (streamRef) {
+            streamRef.getTracks().forEach(track => track.stop());
+            streamRef = null;
+        }
+        isCamRunning = false;
+    }
+
+    function openCameraModal(type) {
+        const cid = document.getElementById('classList').value;
+        const name = document.getElementById('sList').value;
+
+        if(!cid || !name) {
+            Swal.fire({ icon: 'warning', title: 'Please Select', text: 'Select Category and Name First!', confirmButtonColor: '#2e7d32' });
+            return;
+        }
+
+        currentActionType = type;
+        document.getElementById('cam-lat').innerText = userLat.toFixed(7);
+        document.getElementById('cam-lon').innerText = userLon.toFixed(7);
+        
+        document.getElementById('camModal').style.display = 'flex';
+        resetCamUI();
+    }
+
+    function closeCameraModal() {
+        document.getElementById('camModal').style.display = 'none';
+        stopCam();
+    }
+
+    function snap() {
+        const video = document.getElementById('v');
+        const cn = document.getElementById('c');
+        
+        if (!video.videoWidth) return;
+
+        cn.width = video.videoWidth || 400; 
+        cn.height = video.videoHeight || 500;
+        cn.getContext('2d').drawImage(video, 0, 0, cn.width, cn.height);
+        
+        b64 = cn.toDataURL('image/jpeg', 0.6); 
+        document.getElementById('p').src = b64; 
+        document.getElementById('p').style.display = "block"; 
+        video.style.display = "none";
+        
+        stopCam();
+        document.getElementById('snBtn').innerHTML = "Retake/<br>पुनः फोटो लें";
+        document.getElementById('subBtn').classList.add('active');
     }
 
     function submitAttendance() {
@@ -669,15 +635,20 @@
             .then(res => res.json())
             .then(data => {
                 const nowTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-                const todayKey = getTodayKey();
+                const todayKey = new Date().toISOString().split('T')[0];
+                const attKey = `att_${todayKey}_${name}`;
+                let userRecord = JSON.parse(localStorage.getItem(attKey) || '{}');
 
                 if(t === 'check-in') {
-                    localStorage.setItem(`att_in_${todayKey}_${name}`, nowTime);
+                    document.getElementById('in-time-display').innerText = nowTime;
+                    userRecord.inTime = nowTime;
                 } else {
-                    localStorage.setItem(`att_out_${todayKey}_${name}`, nowTime);
+                    document.getElementById('out-time-display').innerText = nowTime;
+                    userRecord.outTime = nowTime;
                 }
 
-                checkLockStatus(name);
+                localStorage.setItem(attKey, JSON.stringify(userRecord));
+                updateUserInfo(); // Apply locks immediately after submission
 
                 Swal.fire({ icon: 'success', title: 'Done', text: `Attendance for ${name} recorded!`, timer: 2000 });
                 resetCamUI();
