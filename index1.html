@@ -59,6 +59,7 @@
         .btn-submit.active { background-color: #007aff; color: white; }
         
         .footer { font-size: 11px; color: #8e8e93; margin-top: 15px; }
+        #file-input { display: none; }
     </style>
 </head>
 <body>
@@ -151,6 +152,7 @@
     </div>
 </div>
 
+<input type="file" id="file-input" accept="image/*" capture="user" onchange="handleNativeCapture(event)">
 <canvas id="c" style="display:none;"></canvas>
 
 <script>
@@ -305,31 +307,32 @@
     async function startCam() {
         stopCam();
         
-        let constraints = { video: { facingMode: currentFacingMode }, audio: false };
-
         try {
-            streamRef = await navigator.mediaDevices.getUserMedia(constraints);
+            streamRef = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: currentFacingMode }, 
+                audio: false 
+            });
+            let v = document.getElementById('v');
+            v.style.display = "block";
+            document.getElementById('p').style.display = "none";
+            v.srcObject = streamRef;
+            await v.play();
+            isCamRunning = true;
         } catch (e) {
-            // Fallback for devices that fail facingMode constraint
-            try {
-                streamRef = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-            } catch (err) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Camera Permission Required',
-                    html: 'Chrome browser me Camera access Blocked hai.<br><br><b>Fix karne ke liye:</b><br>1. Address bar me <b>🔒 icon</b> ya <b>Site Settings</b> par click karein.<br>2. <b>Camera</b> permission ko <b>Allow</b> karein.<br>3. Page refresh karein.',
-                    confirmButtonText: 'OK'
-                });
-                return;
-            }
+            // Web camera blocked, auto trigger native capture fallback
+            document.getElementById('file-input').click();
         }
+    }
 
-        let v = document.getElementById('v');
-        v.style.display = "block";
-        document.getElementById('p').style.display = "none";
-        v.srcObject = streamRef;
-        await v.play();
-        isCamRunning = true;
+    function handleNativeCapture(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const img = new Image();
+            img.onload = function() {
+                compressAndSetPhoto(img);
+            };
+            img.src = URL.createObjectURL(file);
+        }
     }
 
     async function switchCamera() {
