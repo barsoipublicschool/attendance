@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>e-Shikshakosh Attendance UI</title>
+    <title>BPS Attendance UI</title>
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -59,7 +59,6 @@
         .btn-submit.active { background-color: #007aff; color: white; }
         
         .footer { font-size: 11px; color: #8e8e93; margin-top: 15px; }
-        #file-input { display: none; }
     </style>
 </head>
 <body>
@@ -92,8 +91,8 @@
 
         <div class="user-name" id="display-name">SELECT TEACHER</div>
         <div class="info-text">Teacher ID :<span id="display-id">--</span></div>
-        <div class="info-text">UDISE :<span id="display-udise">10101101402</span></div>
-        <div class="school-title">UCCH MADHYAMIK VIDYALAYA KANDELA PATOL</div>
+        <div class="info-text">UDISE :<span id="display-udise">10101109902</span></div>
+        <div class="school-title">BARSOI PUBLIC SCHOOL</div>
 
         <div class="distance-alert" id="distance-info">Calculating distance...</div>
 
@@ -152,7 +151,6 @@
     </div>
 </div>
 
-<input type="file" id="file-input" accept="image/*" capture="user" onchange="handleNativeCapture(event)">
 <canvas id="c" style="display:none;"></canvas>
 
 <script>
@@ -190,7 +188,6 @@
             return;
         }
 
-        // Continuous Location Tracking
         navigator.geolocation.watchPosition(pos => {
             userLat = pos.coords.latitude;
             userLon = pos.coords.longitude;
@@ -319,24 +316,13 @@
             await v.play();
             isCamRunning = true;
         } catch (e) { 
-            document.getElementById('file-input').click();
+            Swal.fire({ icon: 'error', title: 'Camera Error', text: 'Camera access allowed nahi hai ya device support nahi kar raha.' });
         }
     }
 
     async function switchCamera() {
         currentFacingMode = (currentFacingMode === "user") ? "environment" : "user";
         await startCam();
-    }
-
-    function handleNativeCapture(event) {
-        const file = event.target.files[0];
-        if (file) {
-            const img = new Image();
-            img.onload = function() {
-                compressAndSetPhoto(img);
-            };
-            img.src = URL.createObjectURL(file);
-        }
     }
 
     function stopCam() {
@@ -360,7 +346,7 @@
         document.getElementById('camModal').style.display = 'flex';
         resetCamUI();
         
-        // Modal khulte hi automatic embedded camera start hoga
+        // Modal khulte hi HTML5 getUserMedia se camera start hoga
         await startCam();
     }
 
