@@ -309,8 +309,8 @@
         stopCam();
         
         let constraintsOptions = [
-            { video: { facingMode: { exact: currentFacingMode }, width: { ideal: 1280 }, height: { ideal: 960 } }, audio: false },
-            { video: { facingMode: currentFacingMode, width: { ideal: 1280 }, height: { ideal: 960 } }, audio: false },
+            { video: { facingMode: { exact: currentFacingMode }, width: { ideal: 640 }, height: { ideal: 480 } }, audio: false },
+            { video: { facingMode: currentFacingMode }, audio: false },
             { video: true, audio: false }
         ];
 
@@ -382,17 +382,18 @@
         stopCam();
     }
 
+    // --- OPTIMIZED COMPRESSION FOR ULTRA FAST SUBMIT ---
     function compressAndSetPhoto(sourceElement) {
         const cn = document.getElementById('c');
         const ctx = cn.getContext('2d');
         
-        // High Quality resolution 600x600
-        cn.width = 600; 
-        cn.height = 600;
-        ctx.drawImage(sourceElement, 0, 0, 600, 600);
+        // Fast upload size: 450x450 (Lightweight & Crystal Clear)
+        cn.width = 450; 
+        cn.height = 450;
+        ctx.drawImage(sourceElement, 0, 0, 450, 450);
         
-        // 0.7 = 70% Quality (Crystal clear photo)
-        b64 = cn.toDataURL('image/jpeg', 0.7); 
+        // Quality 0.45 makes Base64 size ~30KB (Uploads in 2-3 seconds)
+        b64 = cn.toDataURL('image/jpeg', 0.45); 
         
         document.getElementById('p').src = b64; 
         document.getElementById('p').style.display = "block"; 
@@ -411,12 +412,18 @@
         send(currentActionType);
     }
 
+    // --- SUPERFAST SEND FUNCTION ---
     function send(t) {
         const cid = document.getElementById('classList').value;
         const name = document.getElementById('sList').value;
         const teacherId = document.getElementById('display-id').innerText;
 
-        Swal.fire({ title: 'Submitting...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+        Swal.fire({ 
+            title: 'Submitting...', 
+            text: 'Saving attendance fast...',
+            allowOutsideClick: false, 
+            didOpen: () => { Swal.showLoading(); } 
+        });
 
         const payload = { 
             classId: cid, 
@@ -427,8 +434,10 @@
             photo: b64 
         };
 
+        // Text format payload sends much faster to Google Apps Script
         fetch(SCRIPT_URL, {
             method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify(payload)
         })
         .then(res => res.json())
