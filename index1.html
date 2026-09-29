@@ -59,7 +59,6 @@
         .btn-submit.active { background-color: #007aff; color: white; }
         
         .footer { font-size: 11px; color: #8e8e93; margin-top: 15px; }
-        #file-input { display: none; }
     </style>
 </head>
 <body>
@@ -152,14 +151,13 @@
     </div>
 </div>
 
-<input type="file" id="file-input" accept="image/*" capture="user" onchange="handleNativeCapture(event)">
 <canvas id="c" style="display:none;"></canvas>
 
 <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwO0mPI_E3jfYqswKDStIt4HopC663X5z3DPofREQBlt08kwpr1loQpag8oUuNjBlOZNw/exec"; 
     
-    const SCHOOL_LAT = 25.545017; 
-    const SCHOOL_LON = 88.021896; 
+    const SCHOOL_LAT = 25.624380; 
+    const SCHOOL_LON = 87.929621; 
     const MAX_DIST = 0.5; 
 
     let b64 = "", streamRef = null;
@@ -299,40 +297,54 @@
     }
 
     async function handleCaptureClick() {
-        if (!isCamRunning && !b64) await startCam();
-        else if (isCamRunning) snap();
-        else { resetCamUI(); await startCam(); }
+        if (isCamRunning) {
+            snap();
+        } else {
+            resetCamUI();
+            await startCam();
+        }
     }
 
     async function startCam() {
         stopCam();
         
-        try {
-            streamRef = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: currentFacingMode }, 
-                audio: false 
-            });
-            let v = document.getElementById('v');
-            v.style.display = "block";
-            document.getElementById('p').style.display = "none";
-            v.srcObject = streamRef;
-            await v.play();
-            isCamRunning = true;
-        } catch (e) {
-            // Web camera blocked, auto trigger native capture fallback
-            document.getElementById('file-input').click();
-        }
-    }
+        let constraintsOptions = [
+            { video: { facingMode: { exact: currentFacingMode } }, audio: false },
+            { video: { facingMode: currentFacingMode }, audio: false },
+            { video: true, audio: false }
+        ];
 
-    function handleNativeCapture(event) {
-        const file = event.target.files[0];
-        if (file) {
-            const img = new Image();
-            img.onload = function() {
-                compressAndSetPhoto(img);
-            };
-            img.src = URL.createObjectURL(file);
+        let streamObtained = null;
+
+        for (let constraint of constraintsOptions) {
+            try {
+                streamObtained = await navigator.mediaDevices.getUserMedia(constraint);
+                if (streamObtained) break;
+            } catch (e) {
+                // Try next constraint
+            }
         }
+
+        if (!streamObtained) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Camera Access Blocked',
+                text: 'Camera chalu nahi ho pa raha hai. Kripya Android Settings -> Apps -> Chrome -> Permissions me jayein aur Camera allow karein.'
+            });
+            return;
+        }
+
+        streamRef = streamObtained;
+        let v = document.getElementById('v');
+        v.style.display = "block";
+        document.getElementById('p').style.display = "none";
+        v.srcObject = streamRef;
+        
+        try {
+            await v.play();
+        } catch(e) {}
+        
+        isCamRunning = true;
     }
 
     async function switchCamera() {
