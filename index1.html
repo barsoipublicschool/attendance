@@ -154,10 +154,10 @@
 <canvas id="c" style="display:none;"></canvas>
 
 <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwO0mPI_E3jfYqswKDStIt4HopC663X5z3DPofREQBlt08kwpr1loQpag8oUuNjBlOZNw/exec"; 
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyE8prZsx91RDHyySy9sHBRY5i_zGeViw3M05xJ8jHf4oT00slkkIV8fa3tXosTcX4rTA/exec"; 
     
-    const SCHOOL_LAT = 25.624380; 
-    const SCHOOL_LON = 87.929621; 
+    const SCHOOL_LAT = 25.545017; 
+    const SCHOOL_LON = 88.021896; 
     const MAX_DIST = 0.5; 
 
     let b64 = "", streamRef = null;
@@ -309,8 +309,8 @@
         stopCam();
         
         let constraintsOptions = [
-            { video: { facingMode: { exact: currentFacingMode } }, audio: false },
-            { video: { facingMode: currentFacingMode }, audio: false },
+            { video: { facingMode: { exact: currentFacingMode }, width: { ideal: 1280 }, height: { ideal: 960 } }, audio: false },
+            { video: { facingMode: currentFacingMode, width: { ideal: 1280 }, height: { ideal: 960 } }, audio: false },
             { video: true, audio: false }
         ];
 
@@ -320,16 +320,14 @@
             try {
                 streamObtained = await navigator.mediaDevices.getUserMedia(constraint);
                 if (streamObtained) break;
-            } catch (e) {
-                // Try next constraint
-            }
+            } catch (e) {}
         }
 
         if (!streamObtained) {
             Swal.fire({
                 icon: 'error',
                 title: 'Camera Access Blocked',
-                text: 'Camera chalu nahi ho pa raha hai. Kripya Android Settings -> Apps -> Chrome -> Permissions me jayein aur Camera allow karein.'
+                text: 'Camera chalu nahi ho pa raha hai. Settings me jakar permissions check karein.'
             });
             return;
         }
@@ -340,10 +338,7 @@
         document.getElementById('p').style.display = "none";
         v.srcObject = streamRef;
         
-        try {
-            await v.play();
-        } catch(e) {}
-        
+        try { await v.play(); } catch(e) {}
         isCamRunning = true;
     }
 
@@ -391,11 +386,13 @@
         const cn = document.getElementById('c');
         const ctx = cn.getContext('2d');
         
-        cn.width = 240; 
-        cn.height = 240;
-        ctx.drawImage(sourceElement, 0, 0, 240, 240);
+        // High Quality resolution 600x600
+        cn.width = 600; 
+        cn.height = 600;
+        ctx.drawImage(sourceElement, 0, 0, 600, 600);
         
-        b64 = cn.toDataURL('image/jpeg', 0.3); 
+        // 0.7 = 70% Quality (Crystal clear photo)
+        b64 = cn.toDataURL('image/jpeg', 0.7); 
         
         document.getElementById('p').src = b64; 
         document.getElementById('p').style.display = "block"; 
