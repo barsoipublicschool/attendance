@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>e-Shikshakosh Attendance UI</title>
+    <title>BPS Attendance UI</title>
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -137,7 +137,7 @@
 
             <div class="cam-overlay-text">
                 <div class="bold-name" id="cam-user-name">--</div>
-                <div>UDISE : <span id="cam-udise">10101101402</span></div>
+                <div>UDISE : <span id="cam-udise">10101119902</span></div>
                 <div>Latitude : <span id="cam-lat">0.0000000</span></div>
                 <div>Longitude : <span id="cam-lon">0.0000000</span></div>
                 <div>Time : <span id="cam-time">--:-- AM</span></div>
@@ -156,8 +156,8 @@
 <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyE8prZsx91RDHyySy9sHBRY5i_zGeViw3M05xJ8jHf4oT00slkkIV8fa3tXosTcX4rTA/exec"; 
     
-    const SCHOOL_LAT = 25.624380; 
-    const SCHOOL_LON = 87.929621; 
+    const SCHOOL_LAT = 25.629169; 
+    const SCHOOL_LON = 87.932615; 
     const MAX_DIST = 0.5; 
 
     let b64 = "", streamRef = null;
@@ -327,7 +327,7 @@
             Swal.fire({
                 icon: 'error',
                 title: 'Camera Access Blocked',
-                text: 'Camera chalu nahi ho pa raha hai. Settings me jakar permissions check karein.'
+                text: 'The camera is not working. Please check the permissions in the settings.'
             });
             return;
         }
@@ -420,7 +420,7 @@
 
         Swal.fire({ 
             title: 'Submitting...', 
-            text: 'Saving attendance fast...',
+            text: 'Saving attendance .....',
             allowOutsideClick: false, 
             didOpen: () => { Swal.showLoading(); } 
         });
